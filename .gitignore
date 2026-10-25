@@ -1,0 +1,41 @@
+# 仅供 Git 使用：这些是运行期产物或用户数据，不应提交
+# （项目本身不依赖 Git，但按惯例保留）
+
+# 运行期产物
+logs/
+mtp_mirror/
+*.log
+
+# 用户数据（含路径与评分）
+settings.json
+songs_cache.db
+songs_cache.db-wal
+songs_cache.db-shm
+
+# 测试产物
+tests/.tmp/
+tests/.shots/
+# 截图回归：基线图要提交（它就是"正确答案"），当前截图是每次跑出来的产物
+tests/baseline/main_window.png
+tests/baseline/*.tampered.png
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.venv/
+venv/
+
+# 编辑器
+.idea/
+.vscode/
+
+# 打包产物
+# 注意：`quest_tool.spec` 是**源文件**（打包配置），要提交，所以这里不写 `*.spec`
+build/
+dist/
+.dsh-vision-router/
+
+# 个人下载记录及控件检查现场（仅本机备份）
+/downloads.json
+/qi_reports/

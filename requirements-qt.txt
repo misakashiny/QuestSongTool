@@ -1,0 +1,2 @@
+# M1 tested candidate; install only when explicitly authorized.
+PySide6==6.12.0
