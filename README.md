@@ -4,7 +4,7 @@ Windows 桌面工具，管理 PC 与 Quest 的 Beat Saber 曲库，支持发现�
 
 ## 启动
 
-- **单文件版**：双击 `dist/QuestSongTool.exe`，不需要另装 Python、Qt 或 ADB。`dist/` 为本机构建产物，GitHub 通过 [Releases](https://github.com/misakashiny/p006-quest-song-tool/releases) 提供下载。
+- **单文件版**：双击 `dist/QuestSongTool.exe`，不需要另装 Python、Qt 或 ADB。`dist/` 为本机构建产物，GitHub 通过 [Releases](https://github.com/misakashiny/QuestSongTool/releases) 提供下载。
 - **源码版**：双击 [启动.vbs](启动.vbs)；[创建桌面快捷方式.vbs](创建桌面快捷方式.vbs) 可创建曲库和下载页入口。
 - EXE 默认打开曲库，右上角进入下载歌曲；命令行 `QuestSongTool.exe --downloads` 直接打开下载页。
 
@@ -36,4 +36,4 @@ Windows 桌面工具，管理 PC 与 Quest 的 Beat Saber 曲库，支持发现�
 
 单文件 EXE 会在启动时解出运行组件，设置与评分继续保存在电脑的独立运行目录；移动 EXE 不会打包或迁移个人数据。只打开程序不会自动连接、读取或写入 Quest。
 
-源码上传到已有的[私有 GitHub 仓库](https://github.com/misakashiny/p006-quest-song-tool)。配置、数据库、下载记录、日志、歌曲、运行镜像和传输暂存不进入源码包；本机完整备份另行保留。项目不设置多 AI 独占开发限制。
+源码上传到已有的[公开 GitHub 仓库](https://github.com/misakashiny/QuestSongTool)。配置、数据库、下载记录、日志、歌曲、运行镜像和传输暂存不进入源码包；本机完整备份另行保留。项目不设置多 AI 独占开发限制。
