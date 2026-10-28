@@ -11,6 +11,9 @@ from PySide6.QtWidgets import (
 )
 
 from ..downloads import DownloadError
+from .surfaces import heading, action_icons
+from .icons import line_icon
+
 from ..messages import tr
 from ..search_catalog import ENVIRONMENTS, NEW_ENVIRONMENTS, STYLE_TAGS, TAGS
 from ..search_filters import CHARACTERISTICS, FLAGS, RANGES, filter_params
@@ -65,6 +68,7 @@ class FilterDialog(QDialog):
         root = QVBoxLayout(self)
         root.setContentsMargins(SPACE.L, SPACE.L, SPACE.L, SPACE.L)
         root.setSpacing(SPACE.M)
+        self.heading = heading('filter.title');root.addWidget(self.heading)
         self.tabs = QTabWidget()
         self.tabs.setUsesScrollButtons(False)
         root.addWidget(self.tabs, 1)
@@ -83,6 +87,7 @@ class FilterDialog(QDialog):
             scroll.viewport().installEventFilter(self)
             self.panels[key] = scroll
             self.tabs.addTab(scroll, tr("filter."+key))
+            self.tabs.setTabIcon(self.tabs.count()-1,line_icon({'general':'filter','tags':'list','environments':'folder','metrics':'grid'}[key],self.palette().windowText().color().name()))
         self.options = ((tr("filter.any"), None), (tr("filter.yes"), True), (tr("filter.no"), False))
         general = self.form("general")
         self.ai = self.choice(general, tr("filter.ai"),
@@ -145,6 +150,7 @@ class FilterDialog(QDialog):
         self.cancel_button = QPushButton(tr("filter.cancel"))
         self.apply_button = QPushButton(tr("filter.apply"))
         self.apply_button.setProperty("role", "primary")
+        action_icons((self.reset_button,'refresh'),(self.cancel_button,'close'),(self.apply_button,'check'))
         self.apply_button.setDefault(True)
         for button in (self.reset_button, self.cancel_button, self.apply_button):
             button.setAutoDefault(False)

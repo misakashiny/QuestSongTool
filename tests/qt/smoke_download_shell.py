@@ -47,8 +47,9 @@ def child():
             window.show()
             assert QTest.qWaitForWindowExposed(window, 5000)
             QTest.qWait(40)
-            assert window.columns.currentText() == "3" and window.rows.currentText() == "7"
-            assert window.tabs.count() == 3
+            assert window.columns.currentText() == "6" and window.rows.currentText() == "8"
+            assert window.tabs.count() == 4
+            initial_buttons = len(window.findChildren(QPushButton))
             assert len(window.categories.buttons) == 9
             assert all(not button.isEnabled() for button in window.unavailable)
             assert not window.seek.isEnabled() and not window.play.isEnabled()
@@ -61,13 +62,15 @@ def child():
             QTest.mouseClick(window.views["list"], Qt.MouseButton.LeftButton)
             assert window.views["list"].isChecked() and not window.views["covers"].isChecked()
             footer_y = window.footer.mapTo(window, QPoint()).y()
-            for index in (1, 2, 0):
+            for index in (1, 2, 3, 0):
                 QTest.mouseClick(window.tabs, Qt.MouseButton.LeftButton,
                                  pos=window.tabs.tabRect(index).center())
                 QTest.qWait(30)
                 assert window.pages.currentIndex() == index
-                assert window.player.isVisible() and window.footer.isVisible()
-                assert abs(window.footer.mapTo(window, QPoint()).y()-footer_y) <= 2
+                assert window.player.isVisible()
+                # Catalog/tasks deliberately reserve their footer space for content.
+                assert window.footer.isVisible()==(index in (0,3))
+                if index==0:assert abs(window.footer.mapTo(window, QPoint()).y()-footer_y) <= 2
                 assert window.search.text() == "草稿 Draft"
                 assert window.columns.currentText() == "4" and window.rows.currentText() == "6"
             available = window.screen().availableGeometry()
@@ -85,12 +88,13 @@ def child():
                 assert window.results.width() >= 420 and window.details.width() >= 250
                 assert window.footer.geometry().bottom() < window.player.geometry().top()
                 assert window.pages.geometry().bottom() < window.footer.geometry().top()
-                for button in window.categories.buttons.values():
+                for key,button in window.categories.buttons.items():
+                    if key=="Search":continue
                     assert button.isVisible()
                     assert button.width() >= button.sizeHint().width(), (language, width, button.text(), button.size())
                     assert button.mapTo(window, QPoint()).x()+button.width() <= window.width()
                 if language == "zh" and width == 1280:
-                    assert window.categories.columns == 9
+                    assert window.categories.columns <= 8
                 if language == "en" and width == 1000:
                     assert window.categories.columns < 9
                 results.append([language, mode, width, height, window.categories.columns])
@@ -125,7 +129,7 @@ def child():
                 target = Path(os.environ["QUEST_QT_SHOTS"])
                 target.mkdir(parents=True, exist_ok=True)
                 window.grab().save(str(target / f"m2a-{language}-{mode}-{os.environ.get('QT_SCALE_FACTOR')}.png"))
-            assert len(window.findChildren(QPushButton)) < 40
+            assert len(window.findChildren(QPushButton)) == initial_buttons
             window.close()
             window.deleteLater()
             QTest.qWait(10)

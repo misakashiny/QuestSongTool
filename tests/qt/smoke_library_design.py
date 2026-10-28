@@ -61,6 +61,8 @@ def child():
                     QTest.mouseClick(browser.refresh,Qt.MouseButton.LeftButton);wait(lambda:not browser.busy)
                     browser.choices.setCurrentIndex(1)
                     QTest.mouseClick(browser.read,Qt.MouseButton.LeftButton);wait(lambda:window.quest_ready)
+                    window.identity_checks.values={side:{row['folder']:row['folder'] for row in model.rows} for side,model in (('local',window.model),('quest',window.quest_model))}
+                    window.update_comparison()
                     assert window.quest_model.rowCount()==17 and window.missing_model.rowCount()==8
                     window.view_mode.setCurrentIndex(window.view_mode.findData('list'));QTest.qWait(50)
                     index=window.proxy.index(0,0);rect=window.table.visualRect(index)
@@ -95,8 +97,13 @@ def child():
                             assert table.viewport().height()>=70,(language,mode,height,table.viewport().size())
                             assert table.verticalHeader().defaultSectionSize()==DESKTOP.LIBRARY_ROW_H
                         assert window.library_split.geometry().bottom()<window.preview.page.geometry().top()
-                        for combo in (window.local_filter,window.quest_filter,window.missing_side):
-                            assert combo.width()>=combo.minimumSizeHint().width(),(language,mode,combo.currentText(),combo.width(),combo.minimumSizeHint().width())
+                        for control in (window.local_filter,window.quest_filter,window.missing_side,
+                                        window.workflow.page,window.help_button,window.reports.button,
+                                        window.select_visible,window.clear):
+                            assert not control.isVisible(),(language,mode,control)
+                        for key,(_model,_proxy,button) in window.selection.items.items():
+                            inside(button,{'local':window.local_card,'quest':window.quest_card,'missing':window.missing_card}[key])
+                            assert button.width()>=button.minimumSizeHint().width(),(language,mode,key)
                         assert set(window.model.checked)==checked and window.details.key==detail_key
                     # Burst resize and scroll through the virtual view without per-item widgets.
                     for number in range(16):

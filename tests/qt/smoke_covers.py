@@ -212,12 +212,13 @@ def child():
     huge = cache.image('159', QSize(100000, 100000), 4)
     assert huge.width() <= 2048 and huge.height() <= 2048
     assert cache.scaled_bytes <= cache.SCALED_BYTES
-    folder = Path(os.environ['QUEST_QT_SHOTS']);folder.mkdir(parents=True, exist_ok=True)
-    window.retranslate('zh');window.change_theme('light');window.views['covers'].click()
-    window.resize(min(1340, max_width), min(900, max_height))
-    app.processEvents()
-    assert window.grab().save(str(folder/f'covers-{os.environ.get("QT_SCALE_FACTOR")}.png'))
-    (folder/f'covers-perf-{os.environ.get("QT_SCALE_FACTOR")}.json').write_text(json.dumps(measurements,indent=2),encoding='utf-8')
+    if os.environ.get('QUEST_QT_SHOTS'):
+        folder = Path(os.environ['QUEST_QT_SHOTS']);folder.mkdir(parents=True, exist_ok=True)
+        window.retranslate('zh');window.change_theme('light');window.views['covers'].click()
+        window.resize(min(1340, max_width), min(900, max_height))
+        app.processEvents()
+        assert window.grab().save(str(folder/f'covers-{os.environ.get("QT_SCALE_FACTOR")}.png'))
+        (folder/f'covers-perf-{os.environ.get("QT_SCALE_FACTOR")}.json').write_text(json.dumps(measurements,indent=2),encoding='utf-8')
 
     # A blocked media request cannot block window close or update a closed UI.
     media.entered.clear();media.release.clear()

@@ -32,6 +32,7 @@ Beat Saber 的歌曲音频文件叫 `song.egg`，**内容就是 OGG Vorbis**，
 from __future__ import annotations
 
 import array
+import io
 import threading
 import time
 from pathlib import Path
@@ -238,6 +239,19 @@ def decode_preview(source: Path | str, seconds: float = PREVIEW_SECONDS):
     return samples, _TARGET_RATE, _TARGET_CHANNELS
 
 
+def _seekable_memory(ma, data):
+    """Public miniaudio stream source: seek encoded bytes without keeping a file open."""
+    class MemorySource(ma.StreamableSource):
+        def __init__(self):self.buffer=io.BytesIO(data)
+        def read(self, num_bytes):return self.buffer.read(num_bytes)
+        def seek(self, offset, origin):
+            try:self.buffer.seek(offset,origin.value);return True
+            except (OSError,ValueError):return False
+        def close(self):
+            self.buffer.close();self.ffi_handle=ma.ffi.NULL
+    return MemorySource()
+
+
 def stream_preview(
     source: Path | str,
     seconds: float = PREVIEW_SECONDS,
@@ -288,22 +302,23 @@ def stream_preview(
         logger.info("读音频文件失败 %s：%s", source.name, exc)
         return
 
-    stream = None
+    stream = None;seek_source = None
     try:
-        stream = ma.stream_memory(
-            data,
-            output_format=ma.SampleFormat.SIGNED16,
-            nchannels=_TARGET_CHANNELS,
-            sample_rate=_TARGET_RATE,
-        )
+        options=dict(output_format=ma.SampleFormat.SIGNED16,nchannels=_TARGET_CHANNELS,sample_rate=_TARGET_RATE)
+        if start > 0:
+            # Decoding and discarding every preceding OGG frame made a mid-song
+            # resume take tens of seconds. Seek in the decoder instead. A memory
+            # source also lets PreviewClient remove its temporary file on Windows.
+            seek_source=_seekable_memory(ma,data)
+            stream=ma.stream_any(seek_source,seek_frame=max(0,int(start*_TARGET_RATE)),**options)
+        else:stream=ma.stream_memory(data,**options)
     except Exception as exc:
+        if seek_source is not None:seek_source.close()
         logger.info("创建解码流失败 %s：%s", source.name, exc)
         return
 
-    skip_frames = max(0, int(start * _TARGET_RATE))
     want_frames = int(seconds * _TARGET_RATE) if seconds > 0 else None
     produced = 0
-    skipped = 0
     try:
         for chunk in stream:
             if not chunk:
@@ -311,15 +326,6 @@ def stream_preview(
             # **chunk 是 `array('h')` 元素序列**，一帧 = `_TARGET_CHANNELS` 个元素。
             # 别再"顺手改成按字节算" —— v17.3 试过，把整段算短了一半。
             frames = len(chunk) // _TARGET_CHANNELS
-            # 先丢掉 start 之前的部分（按帧算，与长度无关）
-            if skipped < skip_frames:
-                need = skip_frames - skipped
-                if frames <= need:
-                    skipped += frames
-                    continue
-                chunk = chunk[need * _TARGET_CHANNELS:]
-                frames = len(chunk) // _TARGET_CHANNELS
-                skipped = skip_frames
             if want_frames is not None and produced + frames > want_frames:
                 cut = want_frames - produced
                 if cut <= 0:
@@ -339,6 +345,7 @@ def stream_preview(
                 stream.close()
             except Exception as exc:  # pragma: no cover
                 logger.debug("关闭解码流出错：%s", exc)
+        if seek_source is not None:seek_source.close()
 
 
 def _close_device(device) -> None:

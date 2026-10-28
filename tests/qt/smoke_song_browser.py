@@ -29,6 +29,7 @@ def child():
     except ValueError:
         pass
     window = DownloadWindow()
+    window.columns.setCurrentText('3');window.rows.setCurrentText('7')
     window.move(app.primaryScreen().availableGeometry().topLeft())
     window.show()
     assert QTest.qWaitForWindowExposed(window, 5000)

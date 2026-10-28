@@ -57,6 +57,7 @@ def child():
                 # Global hit testing requires an unobscured test window. Qt can
                 # report activeWindow while another process covers the point.
                 window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint,True);window.show()
+                window.move(app.primaryScreen().availableGeometry().topLeft())
                 assert QTest.qWaitForWindowExposed(window,5000)
                 try:
                     state(window,window.table,'qt.empty.local');state(window,window.quest_table,'qt.empty.quest')
@@ -76,7 +77,12 @@ def child():
                     window.search.setText('no such song');state(window,window.table,'qt.empty.filtered')
                     window.search.clear();assert window.empty_states.labels[window.table].isHidden()
                     snapshot=[dict(row) for row in window.model.rows]
-                    window.set_quest_snapshot(snapshot,'fixture');state(window,window.missing_table,'qt.empty.complete')
+                    window.set_quest_snapshot(snapshot,'fixture')
+                    wait(lambda:window.empty_states.check_panel.isVisible())
+                    assert window.identity_checks.button.isVisible() and window.identity_checks.button.isEnabled()
+                    assert not window.identity_checks.busy
+                    window.identity_checks.values={side:{row['folder']:'a'*40 for row in model.rows} for side,model in (('local',window.model),('quest',window.quest_model))}
+                    window.update_comparison();state(window,window.missing_table,'qt.empty.complete')
                     window.set_quest_snapshot(snapshot,'fixture',skipped=1);state(window,window.missing_table,'qt.empty.partial')
                     assert not window.missing_side.isEnabled() and window.missing_model.rowCount()==0
                     window.clear_quest_snapshot();state(window,window.quest_table,'qt.empty.quest')
@@ -88,6 +94,8 @@ def child():
                     assert window.empty_states.labels[window.grid].isVisible() and not window.empty_states.labels[window.table].isVisible()
                     window.set_target(str(songs));wait(lambda:window.local_ready)
                     window.set_quest_snapshot([],'valid-empty');state(window,window.quest_table,'qt.empty.none')
+                    window.identity_checks.values={'quest':{},'local':{row['folder']:'a'*40 for row in window.model.rows}}
+                    window.update_comparison()
                     assert window.missing_model.rowCount()==1 and window.empty_states.labels[window.missing_table].isHidden()
                     window.search.setText('no such song');state(window,window.grid,'qt.empty.filtered')
                     state(window,window.missing_table,'qt.empty.filtered')

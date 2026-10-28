@@ -1,6 +1,6 @@
 """Read-only viewport hints; model state and all input stay with the existing views."""
 from PySide6.QtCore import QEvent, QObject, QRect, Qt, QTimer
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from ..messages import tr
 from ..theme import SPACE
@@ -25,6 +25,20 @@ class LibraryEmptyStates(QObject):
             view.viewport().installEventFilter(self)
         for proxy in (window.proxy,window.quest_proxy,window.missing_proxy):
             for signal in (proxy.modelReset,proxy.rowsInserted,proxy.rowsRemoved,proxy.layoutChanged):signal.connect(self.schedule)
+        # Checking is an explicit action in the empty missing list, not an
+        # always-present toolbar or an automatic device read on page opening.
+        self.check_panel = QWidget(window.missing_table.viewport())
+        column = QVBoxLayout(self.check_panel);column.setContentsMargins(SPACE.S,SPACE.S,SPACE.S,SPACE.S)
+        column.addStretch()
+        self.check_note = QLabel();self.check_note.setWordWrap(True)
+        self.check_note.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        column.addWidget(self.check_note)
+        checks = window.identity_checks
+        checks.status.setProperty('role','muted');checks.status.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        column.addWidget(checks.status)
+        column.addWidget(checks.button,0,Qt.AlignmentFlag.AlignHCenter)
+        column.addWidget(checks.cancel_button,0,Qt.AlignmentFlag.AlignHCenter)
+        column.addStretch();self.check_panel.hide()
 
     def schedule(self,*_args):
         if not self.closed:self.timer.start()
@@ -42,15 +56,22 @@ class LibraryEmptyStates(QObject):
         else:
             if not (window.local_ready and window.quest_ready):return 'qt.empty.both','qt.empty.both_hint'
             if window.quest_incomplete:return 'qt.empty.partial','qt.empty.partial_hint'
+            if hasattr(window,'identity_checks') and not window.identity_checks.complete():return 'ux.identity_unknown','ux.verify_needed'
             model = window.missing_model
             if not model.rowCount():return 'qt.empty.complete','qt.empty.complete_hint'
         return ('qt.empty.none','qt.empty.none_hint') if not model.rowCount() else ('qt.empty.filtered','qt.empty.filtered_hint')
 
     def refresh(self):
         if self.closed or self.window.closed:return
+        w = self.window
+        checking = w.local_ready and w.quest_ready and not w.quest_incomplete and not w.identity_checks.complete()
+        self.check_note.setText(tr('ui.library.check_needed'))
+        self.check_panel.setGeometry(w.missing_table.viewport().rect().adjusted(SPACE.S,SPACE.S,-SPACE.S,-SPACE.S))
+        self.check_panel.setVisible(checking)
+        if checking:self.check_panel.raise_()
         for view,key in self.views:
             label = self.labels[view]
-            visible = view.model().rowCount()==0
+            visible = view.model().rowCount()==0 and not (key=='missing' and checking)
             if visible:
                 title_key,hint_key = self.state(key)
                 title = tr(title_key)

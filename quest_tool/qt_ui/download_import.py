@@ -4,10 +4,13 @@ from PySide6.QtWidgets import QCheckBox, QFileDialog, QHBoxLayout, QHeaderView, 
 
 from ..downloads import check_cancel
 from ..fsapi import LocalFS, Location
+from .surfaces import surface, heading, style_table, action_strip, action_icons
+
 from ..messages import tr
 from ..song_search import SearchSession
 from ..theme import SPACE
 from .device_protocol import report_fields
+from .playlist_download import PlaylistDownloadDialog
 
 
 class LocalClient:
@@ -77,6 +80,7 @@ class ImportPanel(QObject):
         super().__init__(queue)
         self.queue = queue
         self.closed = False
+        self.playlist_dialog = None
         self.session = SearchSession(LocalClient())
         self.generation = None
         self.scanning = False
@@ -87,27 +91,33 @@ class ImportPanel(QObject):
         self.automatic_refresh.setInterval(250)
         self.automatic_refresh.timeout.connect(self.run_automatic_refresh)
         self.error = False
-        self.page = QWidget()
+        self.page = surface(QWidget())
         layout = QVBoxLayout(self.page)
         layout.setContentsMargins(SPACE.L, SPACE.L, SPACE.L, SPACE.L)
+        self.page.setObjectName('downloadImport')
+        self.heading = heading('layout.import');layout.addWidget(self.heading)
+        self.source_card = surface(QWidget(),'toolbar');source_layout = QVBoxLayout(self.source_card)
+        layout.addWidget(self.source_card)
         self.hint = QLabel()
         self.hint.setWordWrap(True)
         self.hint.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(self.hint)
+        source_layout.addWidget(self.hint)
         self.input = QPlainTextEdit()
         self.input.setMaximumHeight(110)
-        layout.addWidget(self.input)
-        row = QHBoxLayout()
+        source_layout.addWidget(self.input)
         self.links = QPushButton()
         self.zip = QPushButton()
+        self.playlist = QPushButton()
         self.keep = QCheckBox()
         self.keep.setChecked(queue.manager.last_keep_zip)
-        row.addWidget(self.links);row.addWidget(self.zip);row.addWidget(self.keep);row.addStretch(1)
-        layout.addLayout(row)
+        self.links.setProperty('role','primary')
+        action_icons((self.links,'link'),(self.zip,'folder'),(self.playlist,'list'))
+        source_layout.addWidget(action_strip(self.links,self.zip,self.playlist,self.keep))
         row = QHBoxLayout()
         self.summary = QLabel()
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
         self.refresh_button = QPushButton()
+        action_icons((self.refresh_button,'refresh'))
         row.addWidget(self.summary, 1);row.addWidget(self.refresh_button)
         layout.addLayout(row)
         self.model = LocalModel(self)
@@ -115,12 +125,12 @@ class ImportPanel(QObject):
         self.table.setModel(self.model)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().hide()
+        style_table(self.table)
         layout.addWidget(self.table, 1)
-        old = queue.window.pages.widget(2)
-        queue.window.discard_page(old)
-        queue.window.pages.insertWidget(2, self.page)
+        queue.window.replace_page("import_page",self.page)
         self.links.clicked.connect(self.import_links)
         self.zip.clicked.connect(self.import_zip)
+        self.playlist.clicked.connect(self.open_playlist)
         self.refresh_button.clicked.connect(self.refresh_local)
         self.timer = QTimer(self)
         self.timer.setInterval(100)
@@ -129,8 +139,21 @@ class ImportPanel(QObject):
         self.refresh_local()
 
     def import_links(self):
+        if '/playlists/' in self.input.toPlainText():
+            self.open_playlist()
+            self.playlist_dialog.url.setText(self.input.toPlainText().strip())
+            self.playlist_dialog.load('url', self.input.toPlainText())
+            return
         self.queue.submit("links", {"text": self.input.toPlainText(), "target": str(self.queue.target),
                                     "keep_zip": self.keep.isChecked()})
+
+    def open_playlist(self):
+        if self.closed:
+            return
+        if self.playlist_dialog is None:
+            self.playlist_dialog = PlaylistDownloadDialog(self)
+        self.playlist_dialog.render()
+        self.playlist_dialog.show();self.playlist_dialog.raise_();self.playlist_dialog.activateWindow()
 
     def import_zip(self):
         files, _selected = QFileDialog.getOpenFileNames(self.queue.window, tr("dl.import_zip"), "", "ZIP (*.zip)")
@@ -201,10 +224,15 @@ class ImportPanel(QObject):
     def render(self):
         if self.closed:
             return
+        self.heading.setText(tr("layout.import"))
         self.hint.setText(tr("qt.import.hint"))
         self.input.setPlaceholderText(tr("qt.import.placeholder"))
         self.input.setAccessibleName(tr("dl.links"))
         self.links.setText(tr("dl.start"));self.zip.setText(tr("dl.import_zip"));self.keep.setText(tr("dl.keep_zip"))
+        self.playlist.setText(tr('qt.playlist_dl.title'))
+        self.playlist.setEnabled(not self.queue.busy)
+        if self.playlist_dialog is not None:
+            self.playlist_dialog.render()
         self.links.setEnabled(not self.queue.busy);self.zip.setEnabled(not self.queue.busy)
         self.refresh_button.setText(tr("qt.local.refresh"))
         self.summary.setText(tr("qt.local.failed") if self.error else tr("qt.local.loading") if self.scanning else tr("qt.local.count", count=len(self.model.rows)))
@@ -212,6 +240,8 @@ class ImportPanel(QObject):
 
     def close(self):
         self.closed = True
+        if self.playlist_dialog is not None:
+            self.playlist_dialog.shutdown()
         self.automatic_refresh.stop()
         self.refresh_pending = False
         self.scanning = False
@@ -220,5 +250,7 @@ class ImportPanel(QObject):
         self.session.close()
 
     def wait_closed(self):
+        if self.playlist_dialog is not None:
+            self.playlist_dialog.wait_closed()
         for thread in tuple(self.session.tasks._threads):
             thread.join()

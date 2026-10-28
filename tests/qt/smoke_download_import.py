@@ -64,7 +64,7 @@ def child():
             QFileDialog.getExistingDirectory=staticmethod(lambda *args: str(first))
             window.browse.click();wait(lambda:not panel.scanning)
             assert queue.target==first.resolve() and panel.model.rowCount()==0
-            window.tabs.setCurrentIndex(2)
+            window.tabs.setCurrentIndex(window.pages.indexOf(window.import_page))
             panel.input.setPlainText('https://evil.example/maps/abc');panel.links.click()
             wait(lambda:bool(queue.error));assert panel.input.toPlainText() and not manager.snapshot()
             panel.keep.setChecked(True)
@@ -76,7 +76,7 @@ def child():
             # Failed ZIP may be repaired and retried through the real history row.
             bad=base/'bad.zip';bad.write_bytes(b'broken')
             QFileDialog.getOpenFileNames=staticmethod(lambda *args: ([str(bad)],'ZIP'))
-            window.tabs.setCurrentIndex(2);panel.zip.click();wait(lambda:settled(3))
+            window.tabs.setCurrentIndex(window.pages.indexOf(window.import_page));panel.zip.click();wait(lambda:settled(3))
             assert queue.model.rows[-1]['state']=='failed'
             shutil.copy2(archive,bad)
             queue.table.selectRow(2);queue.retry.click();wait(lambda:settled(4))
@@ -110,20 +110,25 @@ def child():
             for language in ('en','zh'):
                 window.retranslate(language)
                 for mode in ('dark','light'):
-                    window.change_theme(mode);window.tabs.setCurrentIndex(2);app.processEvents()
+                    window.change_theme(mode);window.tabs.setCurrentIndex(window.pages.indexOf(window.import_page));app.processEvents()
                     assert panel.input.isVisible() and panel.table.isVisible() and not errors
                     assert panel.refresh_button.mapTo(window,panel.refresh_button.rect().bottomRight()).y()<window.footer.y()
-            shots=Path(os.environ.get('QUEST_QT_SHOTS',ROOT/'tests/.tmp/qt-import'));shots.mkdir(parents=True,exist_ok=True)
+            shots=Path(os.environ.get('QUEST_QT_SHOTS',base/'screenshots'));shots.mkdir(parents=True,exist_ok=True)
             window.grab().save(str(shots/('m5b-import-'+os.environ.get('QT_SCALE_FACTOR','1')+'.png')))
             window.close();queue.wait_closed()
-            # A saved external last_target never becomes the startup write target.
+            # An explicitly chosen workspace folder is restored. The history's
+            # last_target alone still cannot choose a startup write target.
             restored=DownloadWindow(songs=[])
             restored.enable_downloads(sandbox)
             try:
-                assert restored.download_browser.target==(sandbox/'songs').resolve()
+                assert restored.download_browser.target==second.resolve()
                 assert restored.download_browser.manager.last_target==str(second.resolve())
             finally:
                 restored.close();restored.download_browser.wait_closed()
+            (sandbox/'qt-workspace.json').write_text('{}',encoding='utf-8')
+            restored=DownloadWindow(songs=[]);restored.enable_downloads(sandbox)
+            try:assert restored.download_browser.target==(sandbox/'songs').resolve()
+            finally:restored.close();restored.download_browser.wait_closed()
             assert worker_threads and all(t!=main_thread for t in worker_threads)
             assert not errors and not any(n.startswith(('tkinter','customtkinter')) for n in sys.modules)
             print('PASS M5B: actual path/import/history controls, links dedup, ZIP guards/retry, retained ZIP, immutable job targets, local refresh, stale scans, language/theme, safe startup')

@@ -55,7 +55,7 @@ def child():
         sandbox=root/'preview';sandbox.mkdir()
         manager=dl.DownloadManager(sandbox/'qt-downloads.json',client)
         songs=tuple(replace(s,key=f'{i+1:x}') for i,s in enumerate(sample_songs()))
-        window=DownloadWindow(songs=songs);window.enable_downloads(sandbox,manager);window.show()
+        window=DownloadWindow(songs=songs);window.columns.setCurrentText('3');window.rows.setCurrentText('7');window.enable_downloads(sandbox,manager);window.show()
         queue=window.download_browser
         def wait(predicate,seconds=10):
             deadline=time.monotonic()+seconds
@@ -70,6 +70,7 @@ def child():
                 settled = manager._queue.unfinished_tasks == 0
             return bool(manager.snapshot()) and all(r['state'] in dl.TERMINAL for r in manager.snapshot()) and not queue.busy and settled
         def pick(row):
+            wait(lambda:queue.model.rowCount()>row)
             queue.table.clearSelection();queue.table.selectRow(row);app.processEvents()
         try:
             assert Path(window.destination.text()).resolve()==(sandbox/'songs').resolve()
@@ -84,7 +85,7 @@ def child():
             installed=Path(manager.snapshot()[0]['installed'])
             assert installed.is_relative_to(queue.target) and (installed/'Info.dat').is_file()
             assert song_hash(installed)==client.digest and not window.song_model.checked
-            assert window.tabs.currentIndex()==1 and queue.model.rowCount()==1
+            assert window.pages.currentWidget() is window.tasks_page and queue.model.rowCount()==1
             fetched=client.fetched
             window.download_one.click();wait(lambda:len(manager.snapshot())==2 and done())
             assert manager.snapshot()[-1]['state']=='exists' and client.fetched==fetched
@@ -125,7 +126,7 @@ def child():
                 for mode in ('dark','light'):
                     window.change_theme(mode);app.processEvents()
                     assert queue.table.isVisible() and not errors
-            shots=Path(os.environ.get('QUEST_QT_SHOTS',ROOT/'tests/.tmp/qt-queue'));shots.mkdir(parents=True,exist_ok=True)
+            shots=Path(os.environ.get('QUEST_QT_SHOTS',root/'screenshots'));shots.mkdir(parents=True,exist_ok=True)
             window.grab().save(str(shots/('m5a-queue-'+os.environ.get('QT_SCALE_FACTOR','1')+'.png')))
             # Restored history cannot redirect retry outside the preview target.
             row=queue.model.rows[-1];original=row['target'];row['target']=str(root)

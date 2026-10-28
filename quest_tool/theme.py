@@ -46,6 +46,69 @@ class DOWNLOAD:
     TAB_GAP = 6
 
 
+class DOWNLOAD_UI:
+    """Approved download concept; isolated from library/Tk card geometry."""
+    WINDOW_W = 1580
+    WINDOW_H = 980
+    HEADER_Y = 14
+    CATEGORY_AFTER = 12
+    CATEGORY_W = 112
+    SEARCH_W = 100
+    DETAIL_W = 350
+    DETAIL_ART = 288
+    ART_HEIGHT = 154
+    CARD_HEIGHT = 272
+    CARD_TITLE = 17
+    CARD_TEXT = 15
+    BODY_PX = 15
+    OVERLAY = '#14213d'
+    OVERLAY_TEXT = '#ffffff'
+    EXPERT_BG = '#ffe7ee'
+    EXPERT_TEXT = '#c02051'
+    EXPERT_PLUS_BG = '#efe4ff'
+    EXPERT_PLUS_TEXT = '#8541da'
+    BACKGROUND_LIGHT = '#f5f9ff'
+    BORDER_LIGHT = '#dce7f5'
+    SECONDARY_LIGHT = '#62759b'
+
+
+class PAGE_UI:
+    """Shared Qt surfaces following the approved download page."""
+    BACKGROUND_LIGHT = DOWNLOAD_UI.BACKGROUND_LIGHT
+    BORDER_LIGHT = DOWNLOAD_UI.BORDER_LIGHT
+    HEADING_PX = 20
+    ART_ROW = 60
+
+
+class PLAYLIST_UI:
+    """Qt playlist reference geometry; logical pixels, independent of Tk."""
+    GUTTER = 24
+    PANEL_GAP = 16
+    PANEL_RADIUS = 14
+    ACTION_H = 46
+    ROW_H = 68
+    ROW_ART = 50
+    INFO_W = 380
+    INFO_MIN_W = 280
+    COVER_MAX = 348
+    PLAYER_ART = 58
+    PLAYER_BUTTON = 54
+    BRAND_PX = 25
+
+
+class APP_UI:
+    """Shared Qt application density, derived from the approved playlist page."""
+    CARD_RADIUS = PLAYLIST_UI.PANEL_RADIUS
+    GUTTER = 20
+    GAP = 12
+    CONTROL_H = 38
+    ROW_H = 56
+    ROW_ART = 40
+    HEADER_H = 40
+    BODY_PX = 15
+    TITLE_PX = 22
+
+
 class DESKTOP:
     """Qt desktop density; shared palettes and geometry remain authoritative."""
     BODY_PX = 13
@@ -62,8 +125,8 @@ class DESKTOP:
     PLAYER_VOLUME_W = 110
     DOWNLOAD_DETAIL_W = 300
     DOWNLOAD_DETAIL_ART = 256
-    LIBRARY_ROW_H = 48
-    LIBRARY_ROW_ART = 32
+    LIBRARY_ROW_H = APP_UI.ROW_H
+    LIBRARY_ROW_ART = APP_UI.ROW_ART
     LIBRARY_CARD_MIN = 200
     LIBRARY_COLUMNS = (180,80,60)
     LIBRARY_RATING_W = 72

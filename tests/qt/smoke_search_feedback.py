@@ -3,13 +3,14 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT/'tests/qt')]
 
 
 def child():
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import QPoint, QRect, Qt
     from PySide6.QtTest import QSignalSpy, QTest
     from PySide6.QtWidgets import QApplication
     from quest_tool.messages import tr
@@ -26,6 +27,7 @@ def child():
     for language, theme in (('zh', 'light'), ('en', 'dark')):
         front, back = Session(), Session()
         window = DownloadWindow(language=language, mode=theme)
+        window.columns.setCurrentText('3');window.rows.setCurrentText('7')
         window.enable_search(front, back)
         browser, model = window.browser, window.song_model
         browser.prefetch_delay.setInterval(5000)
@@ -94,11 +96,12 @@ def child():
         window.resize(1000, 760)
         QTest.qWait(40)
         controls = (window.category_title, window.select_page, browser.refresh_button, window.columns, window.rows)
-        assert all(widget.width() >= widget.minimumSizeHint().width() for widget in controls)
+        assert all(widget.width() >= widget.minimumSizeHint().width() for widget in controls), [(w.width(),w.minimumSizeHint().width()) for w in controls]
         assert browser.refresh_button.isVisible() and 'F5' in browser.refresh_button.toolTip()
-        for left, right in zip(controls, controls[1:]):
-            assert left.geometry().right() < right.geometry().left()
-        shots = Path(os.environ.get('QUEST_QT_SHOTS', ROOT/'tests/qt/artifacts'))
+        rects=[QRect(widget.mapTo(window,QPoint()),widget.size()) for widget in controls]
+        assert all(window.rect().contains(rect) for rect in rects)
+        assert not any(left.intersects(right) for i,left in enumerate(rects) for right in rects[i+1:])
+        shots = Path(os.environ.get('QUEST_QT_SHOTS', Path(tempfile.gettempdir())/'quest-feedback-shots'))
         shots.mkdir(parents=True, exist_ok=True)
         assert window.grab().save(str(shots/f'feedback-{language}-{theme}.png'))
         browser.request(2)

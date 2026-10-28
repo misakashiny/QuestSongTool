@@ -60,6 +60,7 @@ def main():
     sys.excepthook = report
     foreground, background, media = Session(), Session(), Session()
     window = DownloadWindow()
+    window.columns.setCurrentText('3');window.rows.setCurrentText('7')
     window.enable_search(foreground, background)
     browser, model = window.browser, window.song_model
     foreground.finish(0); browser.poll()

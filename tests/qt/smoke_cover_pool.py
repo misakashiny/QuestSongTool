@@ -186,7 +186,7 @@ def child():
     records = [replace(base, key=str(i), cover_url=urls[i]) for i in range(30)]
     transport = Transport(.002); transport.blocked = set(urls[:4])
     session = CoverSession(transport.factory)
-    window = DownloadWindow(songs=records); window.show()
+    window = DownloadWindow(songs=records);window.columns.setCurrentText('3');window.rows.setCurrentText('7');window.show()
     window.enable_covers(session)
     covers = window.cover_browser
     wait(lambda: len(transport.calls) == 4)

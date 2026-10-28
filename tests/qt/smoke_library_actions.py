@@ -18,6 +18,7 @@ def child():
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QDialog, QLineEdit, QVBoxLayout, QWidget
     from quest_tool.qt_ui.library_window import LibraryWindow
+    from quest_tool.messages import tr
     app = QApplication([]);app.setStyle('Fusion');errors = []
     def report(kind,value,tb):errors.append(repr(value));sys.__excepthook__(kind,value,tb)
     sys.excepthook = report
@@ -89,9 +90,10 @@ def child():
                 key(w.table,Qt.Key.Key_Escape);assert not w.model.checked
                 key(w.table,Qt.Key.Key_D,ctrl);assert not w.details.page.isVisible()
                 key(w.table,Qt.Key.Key_D,ctrl);assert w.details.page.isVisible()
-                # Context command has no automatic clipboard/open side effects and no delete action.
+                # Opening the menu has no side effects; deletion is an explicit action.
                 old = (len(copied),len(opened));m = menu(w,w.table)
-                assert (len(copied),len(opened))==old and len(m.actions())==7
+                assert (len(copied),len(opened))==old and len(m.actions())==9
+                assert m.actions()[4].text()==tr('songs.delete.action')
                 m.actions()[1].trigger();assert copied[-1]=='Title 00'
                 m.actions()[2].trigger();assert opened[-1]==first/'s00'
                 m.close();app.processEvents()
@@ -103,8 +105,11 @@ def child():
                 key(w.table,Qt.Key.Key_C,ctrl);assert copied[-1]=='s00'
                 w.set_quest_snapshot([{'folder':'s00','title':'Remote','author':'Q','error':'','duration':60},
                     {'folder':'remote','title':'Remote only','author':'Q','error':'','duration':60}], 'controlled-Quest')
-                key(w.table,Qt.Key.Key_2,ctrl);assert w.missing_origin=='quest'
-                m=menu(w,w.missing_table);assert not m.actions()[2].isEnabled();m.close();app.processEvents()
+                w.identity_checks.values={side:{row['folder']:row['folder'] for row in model.rows} for side,model in (('local',w.model),('quest',w.quest_model))}
+                w.update_comparison()
+                # Removed direction shortcuts must not silently flip the fixed Quest-missing list.
+                key(w.table,Qt.Key.Key_2,ctrl);assert w.missing_origin=='local'
+                m=menu(w,w.quest_table);assert not m.actions()[2].isEnabled();m.close();app.processEvents()
                 key(w.quest_table,Qt.Key.Key_A,both);assert w.quest_model.checked=={'s00','remote'} and not w.model.checked
                 key(w.quest_table,Qt.Key.Key_Escape);assert not w.quest_model.checked
                 key(w.table,Qt.Key.Key_1,ctrl);assert w.missing_origin=='local'
@@ -115,7 +120,8 @@ def child():
                     assert w.actions.local_path((*token[:3],folder_name)) is None
                 stale=m=menu(w,w.table);old=(len(copied),len(opened))
                 w.set_target(str(second));wait(lambda:w.local_ready)
-                stale.actions()[0].trigger();stale.actions()[2].trigger();stale.actions()[5].trigger()
+                stale.actions()[0].trigger();stale.actions()[2].trigger()
+                next(a for a in stale.actions() if a.text()==tr('qt.actions.all')).trigger()
                 assert (len(copied),len(opened))==old and not w.model.checked
                 stale.close();app.processEvents()
                 w.set_target(str(first));wait(lambda:w.local_ready)

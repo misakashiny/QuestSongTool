@@ -77,7 +77,7 @@ def child():
                 window.favorite.click(); assert window.favorite.isChecked()
                 for width in (1000,1280,1600):
                     window.resize(width,824);QTest.qWait(50)
-                    ordered((window.preview_cover,window.preview_name,window.play,window.seek,window.preview_time,window.volume),window.player)
+                    ordered((window.preview_cover,window.preview_name,window.preview_time,window.seek,window.preview_total,window.preview_previous,window.play,window.preview_next,window.volume),window.player)
                     ordered((window.favorite,window.download_one),window.detail_panel)
                 window.preview_browser.song=one
                 window.show_song(None)
@@ -107,8 +107,8 @@ def child():
                 assert not window.preview.play.text() and window.preview.play.accessibleName()==tr('qt.local_audio.play')
                 for width,height in ((1000,640),(1280,824),(1600,900)):
                     window.resize(width,height);QTest.qWait(50)
-                    ordered((window.preview.cover,window.preview.title,window.preview.play,window.preview.seek,window.preview.time,
-                             window.preview.length,window.preview.volume),window.preview.page)
+                    ordered((window.preview.cover,window.preview.title,window.preview.time,window.preview.seek,window.preview.total_label,
+                             window.preview.previous,window.preview.play,window.preview.next_button,window.preview.volume),window.preview.page)
                 source='Quest 3 / long source '+('CustomLevels/'*30)
                 window.set_quest_snapshot(window.model.rows[:2],source,skipped=1)
                 assert source not in window.quest_summary.text()

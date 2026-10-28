@@ -144,14 +144,23 @@ def child():
                 dialog.close()
                 # Both transfer directions can be enabled; missing origin cannot flip a push.
                 window.set_quest_snapshot([],selected['identity']);window.missing_side.setCurrentIndex(window.missing_side.findData('quest'))
+                window.identity_checks.values={'quest':{},'local':{row['folder']:str(i)*40 for i,row in enumerate(window.model.rows,1)}}
+                window.update_comparison()
                 window.missing_model.checked={'existing'};window.transfers.render();assert window.transfers.push_missing.isEnabled()
                 window.transfers.push_missing.click();assert window.transfers.dialog.plan.folders==('existing',)
                 window.transfers.dialog.close()
                 window.missing_side.setCurrentIndex(window.missing_side.findData('local'));window.transfers.render();assert not window.transfers.push_missing.isEnabled()
                 for width in (1000,1400):
                     window.resize(width,850);app.processEvents()
-                    for button in (window.transfers.select,window.transfers.clear,window.transfers.pull,window.transfers.missing,window.transfers.push,window.transfers.push_missing):
-                        assert button.width()>40 and window.transfers.page.rect().contains(button.geometry())
+                    # The header moves the existing actions on the next event
+                    # turn when it crosses its wrap boundary. Assert settled
+                    # geometry, retaining the original size/containment checks.
+                    wait(lambda:all(button.width()>=button.minimumSizeHint().width() and window.transfers.push_actions.rect().contains(button.geometry())
+                        for button in (window.transfers.push,window.transfers.push_missing)))
+                    for button in (window.transfers.select,window.transfers.clear,window.transfers.pull,window.transfers.missing):
+                        assert not button.isVisible()
+                    for button in (window.transfers.push,window.transfers.push_missing):
+                        assert button.width()>=button.minimumSizeHint().width() and window.transfers.push_actions.rect().contains(button.geometry()),(button.text(),button.geometry(),window.transfers.push_actions.rect())
                 shots=os.environ.get('QUEST_QT_SHOTS')
                 if shots:
                     path=Path(shots);path.mkdir(parents=True,exist_ok=True);window.grab().save(str(path/f'push-{language}-{os.environ.get("QT_SCALE_FACTOR","1")}.png'))
@@ -181,5 +190,5 @@ if __name__=='__main__':
         for language in ('zh','en'):
             for scale in ('1','1.25','1.5'):
                 result=subprocess.run([sys.executable,'-B',__file__,'--child'],cwd=ROOT,env=dict(os.environ,TEST_LANG=language,QT_SCALE_FACTOR=scale),capture_output=True,timeout=120)
-                print(language,scale,result.stdout.decode('utf-8','replace'),result.stderr.decode('utf-8','replace'),flush=True)
+                print(language,scale,result.stdout.decode(sys.stdout.encoding or 'utf-8','backslashreplace'),result.stderr.decode(sys.stdout.encoding or 'utf-8','backslashreplace'),flush=True)
                 assert result.returncode==0

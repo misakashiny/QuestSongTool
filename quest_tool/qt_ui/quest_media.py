@@ -158,7 +158,7 @@ class QuestMediaPresenter(QObject):
             if message.kind=='search_error':
                 code = data.get('code')
                 if code in ('device_disconnected','device_rejected','device_unauthorized','device_offline','device_roots'):
-                    browser = self.window.device_browser;browser.invalidate()
+                    browser = self.window.device_browser;browser.invalidate(keep_snapshot=True)
                     browser.state = {'device_disconnected':'disconnected','device_rejected':'rejected',
                         'device_unauthorized':'unauthorized','device_offline':'offline','device_roots':'roots'}[code]
                     browser.render();return

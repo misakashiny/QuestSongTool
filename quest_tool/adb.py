@@ -51,6 +51,13 @@ class AdbUnavailable(AdbError):
 
 
 @dataclass(frozen=True)
+class AdbResult:
+    returncode: int
+    stdout: str
+    stderr: str
+
+
+@dataclass(frozen=True)
 class AdbDevice:
     serial: str
     state: str  # device / unauthorized / offline ...
@@ -315,6 +322,25 @@ class AdbBridge:
     def shell(self, command: str, timeout: float | None = None, check: bool = True) -> str:
         """执行设备端 shell 命令。"""
         return str(self.run(["shell", command], timeout=timeout, check=check))
+
+    def run_result(self, args: Sequence[str], timeout: float = 10.0) -> AdbResult:
+        """Structured text results for connection commands; no argument logging.
+
+        Keep run() and its binary/stdout contract unchanged for song transfers.
+        """
+        if not self.available:
+            raise AdbUnavailable('ADB executable is unavailable')
+        try:
+            result = subprocess.run(self._base_cmd()+list(args), capture_output=True,
+                                    timeout=timeout, creationflags=_CREATE_NO_WINDOW)
+        except subprocess.TimeoutExpired:
+            raise AdbError('ADB command timed out') from None
+        except OSError:
+            raise AdbUnavailable('ADB executable could not be started') from None
+        if len(result.stdout or b'')+len(result.stderr or b'') > 65536:
+            raise AdbError('ADB command output exceeded limit')
+        return AdbResult(result.returncode, (result.stdout or b'').decode('utf-8','replace'),
+                         (result.stderr or b'').decode('utf-8','replace'))
 
     def shell_bytes(self, command: str, timeout: float | None = None) -> bytes:
         """执行设备端命令并取原始字节（用于 tar 流）。"""

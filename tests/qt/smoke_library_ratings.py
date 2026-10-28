@@ -74,7 +74,7 @@ def child():
                 assert LocalModel().columnCount()==3 and window.model.columnCount()==4
                 state['fail']=True
                 assert window.set_target(first);wait(lambda:window.ratings.failed)
-                assert all(v is None for v in values().values()) and window.rating_retry.isVisible()
+                assert all(v is None for v in values().values()) and not window.rating_retry.isVisible()
                 state['fail']=False;window.rating_retry.click();wait(lambda:window.ratings.ready)
                 assert values()==dict(a=3,b=3,c=0,n=0,z=5)
                 assert row('n').data(RATING_ROLE)==0 and row('n').siblingAtColumn(3).data()=='0 / 5'
@@ -96,6 +96,8 @@ def child():
                 Database.set_rating=old_set;window.userdata.retry.click();wait(lambda:not window.userdata.pending)
                 assert values()['b']==4
                 window.set_quest_snapshot([dict(folder='a',title='Quest a',author='',duration=0,error=''),dict(folder='quest-only',title='Quest',author='',duration=0,error='')],'fixture')
+                window.identity_checks.values={side:{row['folder']:row['folder'] for row in model.rows} for side,model in (('local',window.model),('quest',window.quest_model))}
+                window.update_comparison()
                 assert all(window.quest_model.row_rating(i) is None for i in range(window.quest_model.rowCount()))
                 assert {item['folder']:window.missing_model.row_rating(i) for i,item in enumerate(window.missing_model.rows)}==dict(b=4,c=0,n=0,z=5)
                 window.missing_side.setCurrentIndex(1)
@@ -142,7 +144,7 @@ def child():
                 restored=LibraryWindow(sandbox,language)
                 assert restored.table.saved_widths()==[333,177,91]
                 assert restored.table.isColumnHidden(1)
-                assert restored.table.columnWidth(3)==111 and restored.preview.length.currentData()==60 and restored.preview.volume.value()==35
+                assert restored.table.columnWidth(3)==111 and restored.preview.play_seconds==0 and restored.preview.volume.value()==35
                 restored.close();restored.wait_closed()
                 print('PASS',language,'rating roots/numeric stable sorting/unknown last/selection/checks/commit/failure/retry/Quest/missing/grid/DPI/prefs/close')
             finally:

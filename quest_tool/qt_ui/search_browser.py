@@ -14,6 +14,8 @@ from .filter_dialog import FilterDialog
 from .filter_tools import FilterTools
 from .song_model import Song
 from .page_cache import PageCache
+from .icons import line_icon
+from ..theme import get_palette
 
 
 class SearchBrowser(QObject):
@@ -48,11 +50,11 @@ class SearchBrowser(QObject):
         self.filters = {}
         self.filter_window = None
         self.pending_page = 0
-        self.pending_size = 21
+        self.pending_size = 48
         self.timer = QTimer(window)
         self.timer.setInterval(40)
         self.timer.timeout.connect(self.poll)
-        controls = window.discovery.layout().itemAt(1).layout()
+        controls = window.search_controls
         self.status = window.note
         self.sort = QComboBox()
         for order in ORDERS:
@@ -63,6 +65,9 @@ class SearchBrowser(QObject):
         controls.insertWidget(3, self.cancel_button)
         controls.insertWidget(4, self.retry_button)
         self.refresh_button = QPushButton()
+        self.refresh_button.setFixedWidth(42)
+        self.refresh_button.setIcon(line_icon('refresh',get_palette(window.mode).TEXT_PRIMARY))
+        window.semantic_icons.append((self.refresh_button,'refresh'))
         controls.insertWidget(5, self.refresh_button)
         self.refresh_button.clicked.connect(self.refresh_current)
         self.refresh_shortcut = QShortcut(QKeySequence('F5'), window)
@@ -340,7 +345,7 @@ class SearchBrowser(QObject):
         self.sort.setAccessibleName(tr("qt.search.sort"))
         self.cancel_button.setText(tr("qt.search.cancel"))
         self.retry_button.setText(tr("qt.search.retry"))
-        self.refresh_button.setText(tr('qt.search.refresh_page'))
+        self.refresh_button.setText('')
         self.refresh_button.setToolTip(tr('qt.search.refresh_hint'))
         self.refresh_button.setAccessibleName(tr('qt.search.refresh_page'))
         self.window.note.setText(tr("qt.search.note"))
@@ -392,6 +397,7 @@ class SearchBrowser(QObject):
             if self.from_cache:
                 text = tr('qt.search.cached')+' · '+text
         self.status.setText(text)
+        self.status.setToolTip(text)
         window.results.empty_text = self.status.text() if not model.rowCount() else ""
         window.results.viewport().update()
         self.window.results.setAccessibleName(tr("qt.search.browser"))

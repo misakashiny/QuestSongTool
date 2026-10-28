@@ -12,6 +12,7 @@ from ..messages import tr
 from ..search_filters import browse_params
 from ..theme import SPACE
 from .filter_presets import FilterPresets, conditions, without
+from .surfaces import action_icons, style_table
 
 
 class SummaryLabel(QLabel):
@@ -50,7 +51,10 @@ class FilterTools(QObject):
         layout.addWidget(self.description, 1)
         layout.addWidget(self.clear)
         layout.addWidget(self.presets)
-        browser.window.discovery.layout().insertWidget(2, self.row)
+        browser.window.filter_container.addWidget(self.row)
+        self.description.hide();self.presets.hide()
+        self.preset_action = browser.window.options.menu().addAction(tr("qt.filters.presets"))
+        self.preset_action.triggered.connect(self.open_presets)
         self.clear.clicked.connect(lambda: self.commit({}))
         self.presets.clicked.connect(self.open_presets)
         self.refresh()
@@ -61,7 +65,11 @@ class FilterTools(QObject):
 
     def refresh(self):
         items = conditions(self.browser.filters)
-        self.summary.setText(tr('qt.filters.summary', count=len(items)))
+        self.row.setVisible(bool(items))
+        self.preset_action.setText(tr('qt.filters.presets'))
+        self.preset_action.setEnabled(self.store is not None and not self.browser.closed)
+        self.preset_action.setToolTip(tr('qt.filters.preset_hint'))
+        self.summary.setText(' · '.join(text for _keys,text in items) if len(items)==1 else tr('qt.filters.summary',count=len(items)))
         self.summary.setEnabled(bool(items))
         self.menu.clear()
         for keys, text in items:
@@ -124,6 +132,7 @@ class PresetDialog(QDialog):
         hint.setWordWrap(True)
         root.addWidget(hint)
         self.list = QListWidget()
+        style_table(self.list)
         root.addWidget(self.list, 1)
         self.name = QLineEdit()
         self.name.setMaxLength(40)
@@ -145,6 +154,8 @@ class PresetDialog(QDialog):
         root.addWidget(self.error)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         buttons.button(QDialogButtonBox.StandardButton.Close).setText(tr('qt.filters.close'))
+        action_icons((self.save,'save'),(self.load,'folder'),(self.delete,'trash'),
+                     (buttons.button(QDialogButtonBox.StandardButton.Close),'close'))
         buttons.rejected.connect(self.reject)
         root.addWidget(buttons)
         self.save.clicked.connect(self.save_current)

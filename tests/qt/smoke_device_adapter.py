@@ -126,7 +126,7 @@ def child():
                 for control in (panel.choices,panel.refresh,panel.read,panel.clear,panel.status):
                     assert control.width()>0 and control.height()>0
                     assert control.mapTo(window,control.rect().bottomRight()).x()<=window.width()
-                controls=(panel.choices,panel.refresh,panel.read,panel.clear,panel.status)
+                controls=tuple(c for c in (panel.choices,panel.refresh,panel.read,panel.clear,panel.status) if c.isVisible())
                 for i,first in enumerate(controls):
                     first_rect=first.rect().translated(first.mapTo(panel.page,first.rect().topLeft()))
                     assert panel.page.rect().contains(first_rect),(first.text() if hasattr(first,'text') else 'choice',first_rect,panel.page.rect())

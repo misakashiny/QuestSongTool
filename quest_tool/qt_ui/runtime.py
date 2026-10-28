@@ -34,12 +34,16 @@ class PreviewRuntime:
                                                encoding="utf-8")
             self.handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
             self.logger.addHandler(self.handler)
+            self.audio_logger=logging.getLogger('quest_tool.audio')
+            self.audio_level=self.audio_logger.level;self.audio_logger.setLevel(logging.INFO)
+            self.audio_logger.addHandler(self.handler)
         except Exception:
             self.lock.unlock()
             raise
 
     def close(self):
         if self.handler is not None:
+            self.audio_logger.removeHandler(self.handler);self.audio_logger.setLevel(self.audio_level)
             self.logger.removeHandler(self.handler)
             self.handler.close()
             self.handler = None

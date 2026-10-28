@@ -29,17 +29,17 @@ def _alert(message: str, detail: str = "") -> None:
 
 def main() -> int:
     try:
-        from quest_tool.__main__ import main as run
+        from quest_tool.qt_ui.bootstrap import run
     except ImportError as exc:
         _alert(
             "缺少运行依赖，程序无法启动。\n\n"
-            "请在命令行里执行一次：\n    pip install customtkinter pillow\n\n"
-            "或者直接双击同目录下的 启动.bat（它会自动安装）。",
+            "请在命令行里执行一次：\n    pip install -r requirements-qt.txt\n\n"
+            "请使用同目录下的 启动.vbs 检查新版启动入口。",
             str(exc),
         )
         return 1
     try:
-        return run()
+        return run(["--library", "--quest-adb", "--adb-path", r"C:\Android\Sdk\platform-tools\adb.exe"])
     except Exception:
         _alert("程序启动时发生意外错误。", traceback.format_exc())
         return 1

@@ -18,11 +18,9 @@ class SnapshotNotice(QObject):
         self.started = None
         self.completed_at = ''
         self.closed = False
-        self.label = QLabel()
+        self.label = QLabel(window.retired_controls)
         self.label.setWordWrap(True)
         self.label.setTextFormat(Qt.TextFormat.PlainText)
-        box = window.quest_summary.parentWidget().layout()
-        box.insertWidget(box.indexOf(window.quest_summary)+1, self.label)
         self.label.hide()
         self.timer = QTimer(self)
         self.timer.setInterval(60000)
@@ -52,8 +50,8 @@ class SnapshotNotice(QObject):
     def render(self):
         if self.closed:return
         visible = self.window.quest_ready and self.started is not None
-        self.label.setVisible(visible and self.window.height() > 720)
-        if not visible:return
+        if not visible:
+            self.timer.stop();return
         seconds = max(0, self.clock()-self.started)
         age = tr('qt.snapshot.just_now') if seconds < 60 else tr('qt.snapshot.minutes', count=int(seconds//60))
         state = tr('qt.snapshot.partial') if self.window.quest_incomplete else tr('qt.snapshot.old') if seconds >= self.RECOMMEND_AFTER else tr('qt.snapshot.cached')
@@ -68,10 +66,13 @@ class SnapshotNotice(QObject):
         self.label.setToolTip(hint)
         self.label.setAccessibleName(text+' '+hint)
         full_summary = tr('qt.library.snapshot', source=self.window.quest_display, count=self.window.quest_model.rowCount())
-        summary = tr('qt.ui.snapshot_count', count=self.window.quest_model.rowCount())
-        if compact:summary += '\n'+text
+        summary = tr('ui.library.snapshot_count', count=self.window.quest_model.rowCount())
+        # Keep the three list headers aligned. The complete capture time and
+        # age remain in the hover/accessibility text, without an extra row.
+        if self.window.quest_incomplete:summary += ' · '+tr('qt.snapshot.partial_short')
+        elif seconds >= self.RECOMMEND_AFTER:summary += ' · '+tr('qt.snapshot.old_short')
         if self.window.quest_summary.text() != summary:self.window.quest_summary.setText(summary)
-        self.window.quest_summary.setToolTip(full_summary+'\n'+hint)
+        self.window.quest_summary.setToolTip(full_summary+'\n'+text+'\n'+hint)
         self.window.quest_summary.setAccessibleName(full_summary+' '+text+' '+hint)
 
     def close(self):

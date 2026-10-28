@@ -103,6 +103,12 @@ def child():
                 click(window.quest_table,row(window.quest_proxy,'remote-only'))
                 assert detail.key[0]=='quest' and detail.fields['duration'].text()=='2:05' and len(client.calls)==count
                 assert detail.fields['size'].text()==tr('search.unknown') and detail.fields['bpm'].text()==tr('search.unknown')
+                # Missing rows require completed version verification. Supply
+                # isolated verified identities for this presentation-only test.
+                assert window.missing_model.rowCount()==0
+                window.identity_checks.values={side:{item['folder']:side+'-'+item['folder'] for item in model.rows}
+                    for side,model in (('local',window.model),('quest',window.quest_model))}
+                window.update_comparison()
                 window.missing_side.setCurrentIndex(1);click(window.missing_table,row(window.missing_proxy,'remote-only'))
                 assert detail.key[0]=='quest' and len(client.calls)==count
                 window.missing_side.setCurrentIndex(0);click(window.missing_table,row(window.missing_proxy,'first'))

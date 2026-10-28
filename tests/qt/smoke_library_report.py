@@ -72,6 +72,14 @@ def child():
         language=os.environ['TEST_LANG'];window=LibraryWindow(base/'preview',language);window.show()
         try:
             reports=window.reports
+            # Export tests use declared fixture identities. Real map hashing and
+            # renamed/same-name-different-content cases live in smoke_usability.
+            original_snapshot=window.set_quest_snapshot
+            def verified_snapshot(rows,identity):
+                original_snapshot(rows,identity)
+                window.identity_checks.values={side:{row['folder']:hashlib.sha1(row['folder'].encode()).hexdigest() for row in model.rows} for side,model in (('local',window.model),('quest',window.quest_model))}
+                window.update_comparison();reports.changed()
+            window.set_quest_snapshot=verified_snapshot
             assert not reports.button.isEnabled()
             assert window.set_target(str(local));wait(lambda:window.local_ready and window.ratings.ready)
             assert window.model.rows[0]['bpm']==120 and window.model.rows[0]['difficulties']==('ExpertPlus',)
@@ -141,7 +149,7 @@ def child():
             window.set_quest_snapshot(quest,selected['identity']);window.search.clear();app.processEvents()
             for width in (1000,1400):
                 window.resize(width,850);app.processEvents()
-                assert reports.button.width()>60 and reports.button.parentWidget().rect().contains(reports.button.geometry())
+                assert not reports.button.isVisible() and not reports.status.isVisible()
             shots=os.environ.get('QUEST_QT_SHOTS')
             if shots:
                 folder=Path(shots);folder.mkdir(parents=True,exist_ok=True)

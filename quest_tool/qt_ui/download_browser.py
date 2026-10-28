@@ -2,15 +2,19 @@
 from pathlib import Path
 import threading
 
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt, QTimer
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt, QTimer, Signal
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QPushButton, QTableView, QVBoxLayout, QWidget
 
 from ..downloads import DownloadError, DownloadManager, TERMINAL, parse_map_ids
+from .surfaces import surface, heading, style_table, action_icons
+
 from ..messages import catalog, tr
 from ..theme import SPACE
 from ..workers import TaskRunner
 from .download_import import ImportPanel
 from .queue_results import QueueResults
+from .queue_delegate import QueueDelegate
+from .workspace_directory import WorkspaceDirectory
 
 
 def queue_action(tasks, manager, action, values):
@@ -116,11 +120,13 @@ class QueueModel(QAbstractTableModel):
 
 
 class DownloadBrowser(QObject):
+    targetChanged = Signal(str)
     def __init__(self, window, sandbox, manager=None):
         super().__init__(window)
         self.window = window
         self.sandbox = Path(sandbox).resolve()
-        self.target = self.sandbox/"songs"
+        self.workspace_directory = WorkspaceDirectory(self.sandbox)
+        self.target = self.workspace_directory.load() or self.sandbox/"songs"
         self.target.mkdir(parents=True, exist_ok=True)
         if self.target.resolve() != self.target or self.target.is_symlink() or self.target.is_junction():
             raise ValueError(tr("qt.data_conflict"))
@@ -139,13 +145,16 @@ class DownloadBrowser(QObject):
         self.timer = QTimer(self)
         self.timer.setInterval(100)
         self.timer.timeout.connect(self.poll)
-        self.page = QWidget()
+        self.page = surface(QWidget());self.page.setObjectName('downloadTasks')
         layout = QVBoxLayout(self.page)
         layout.setContentsMargins(SPACE.L, SPACE.L, SPACE.L, SPACE.L)
+        title_row = QHBoxLayout();self.heading = heading('qt.queue.title');title_row.addWidget(self.heading,1);layout.addLayout(title_row)
         self.status = QLabel()
         self.status.setTextFormat(Qt.TextFormat.PlainText)
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
+        self.view_local = QPushButton(tr('ux.view_local'))
+        self.view_local.clicked.connect(window.view_local_result);title_row.addWidget(self.view_local)
         self.model = QueueModel(self)
         self.table = QTableView()
         self.table.setModel(self.model)
@@ -153,20 +162,27 @@ class DownloadBrowser(QObject):
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2,QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(2,150)
+        self.table.horizontalHeader().setMinimumSectionSize(85)
         self.table.verticalHeader().hide()
         self.table.selectionModel().selectionChanged.connect(self.refresh)
+        style_table(self.table)
+        self.table.verticalHeader().setDefaultSectionSize(56)
+        self.table.setItemDelegate(QueueDelegate(self))
         layout.addWidget(self.table, 1)
         self.results = QueueResults(self)
-        layout.insertWidget(1, self.results)
+        layout.insertWidget(2, self.results)
         row = QHBoxLayout()
         self.cancel = QPushButton()
         self.retry = QPushButton()
         self.clear_history = QPushButton()
+        self.retry.setProperty("role","primary");self.clear_history.setProperty("role","danger")
+        action_icons((self.view_local,'folder'),(self.cancel,'stop'),(self.retry,'refresh'),(self.clear_history,'trash'))
         row.addWidget(self.clear_history);row.addStretch(1);row.addWidget(self.cancel);row.addWidget(self.retry)
         layout.addLayout(row)
-        old = window.pages.widget(1)
-        window.discard_page(old)
-        window.pages.insertWidget(1, self.page)
+        window.replace_page("tasks_page",self.page)
         self.cancel.clicked.connect(lambda: self.act("cancel"))
         self.retry.clicked.connect(lambda: self.act("retry"))
         self.clear_history.clicked.connect(lambda: self.submit("clear", {}))
@@ -184,7 +200,11 @@ class DownloadBrowser(QObject):
     def refresh(self, *_args):
         if self.closed:
             return
+        self.heading.setText(tr('qt.queue.title'))
+        self.view_local.setText(tr('ux.view_local'))
         self.model.refresh_headers()
+        active=sum(row['state'] not in TERMINAL for row in self.model.rows)
+        self.window.task_badge.setText(str(active));self.window.task_badge.setVisible(active>0)
         self.results.refresh()
         self.cancel.setText(tr("dl.cancel"));self.retry.setText(tr("dl.retry"))
         self.clear_history.setText(tr("dl.clear"))
@@ -218,11 +238,13 @@ class DownloadBrowser(QObject):
         if not path.is_dir() or path == Path(path.anchor) or str(path).startswith(("\\\\", "//")):
             self.error = "target";self.refresh();return False
         self.target = self.confirmed_target = path
+        self.workspace_directory.save(path)
         self.window.destination.setText(str(path))
         self.error = ""
         self.importer.model.replace([])
         self.importer.refresh_local()
         self.refresh()
+        self.targetChanged.emit(str(path))
         return True
 
     def submit(self, action, values):
@@ -285,7 +307,7 @@ class DownloadBrowser(QObject):
                 for key in data["sources"]:
                     model.checked.discard(key);model.selected_records.pop(key, None)
                 model.notify_checks()
-                self.window.tabs.setCurrentIndex(1)
+                self.window.show_tasks()
         self.manager.tasks.drain()
         rows_changed = self.model.replace(self.manager.snapshot())
         present = {r["id"] for r in self.model.rows}
@@ -323,5 +345,6 @@ class DownloadBrowser(QObject):
         for thread in tuple(self.manager.tasks._threads):
             thread.join()
         self.importer.wait_closed()
+        if self.window.playlist_browser:self.window.playlist_browser.wait_closed()
         if self.cover_loader:self.cover_loader.wait_closed()
         if self.verification:self.verification.wait_closed()

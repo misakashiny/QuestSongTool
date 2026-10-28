@@ -146,6 +146,18 @@ class AdbReadOnlyProvider:
 
         with self._operation(cancel):return read_assets(self,selected,items,cancel)
 
+    def read_identities(self, selected, items, cancel):
+        from .adb_identity import read_identities
+        with self._operation(cancel):return read_identities(self,selected,items,cancel)
+
+    def read_audio(self, selected, item, cancel):
+        from .adb_playback import read_audio
+        with self._operation(cancel):return read_audio(self,selected,item,cancel)
+
+    def read_playlist_index(self, selected, items, cancel):
+        from .adb_playback import read_playlist_index
+        with self._operation(cancel):return read_playlist_index(self,selected,items,cancel)
+
     def _read_library(self, selected, cancel, *, durations):
         selected = descriptor(selected)
         if selected['kind']!='adb':raise DownloadError('device_rejected')

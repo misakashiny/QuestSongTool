@@ -24,7 +24,7 @@ def child():
     from quest_tool.song_search import SearchSession
     from quest_tool.qt_ui.cover_browser import CoverCache
     from quest_tool.qt_ui.theme import arrow_image
-    from quest_tool.theme import DESKTOP,get_palette
+    from quest_tool.theme import DOWNLOAD_UI,get_palette
     app=QApplication([]);app.setStyle('Fusion');errors=[]
     def record_error(kind,value,tb):
         errors.append(repr(value));sys.__excepthook__(kind,value,tb)
@@ -43,7 +43,7 @@ def child():
             assert QTest.qWaitForWindowExposed(window,5000)
             try:
                 wait(lambda:window.browser.generation is None)
-                records=window.song_model.visible_songs();assert len(records)==21
+                records=window.song_model.visible_songs();assert len(records)==48
                 cache=CoverCache()
                 for number,song in enumerate(records):
                     image=Image.new('RGB',(256,256),colors[number%len(colors)]);draw=ImageDraw.Draw(image)
@@ -51,20 +51,20 @@ def child():
                     draw.text((76,120),'STUDIO DEMO',fill='#ffffff');data=io.BytesIO();image.save(data,'PNG');assert cache.put(song.cover_url,data.getvalue())
                 window.results.online=True;window.results.cover_cache=cache
                 window.cover.setPixmap(cache.image(records[0].cover_url,QSize(170,170),window.devicePixelRatioF()))
-                assert window.columns.currentText()=='3' and window.rows.currentText()=='7' and window.song_model.rowCount()==21
-                assert window.search.font().pixelSize()==DESKTOP.BODY_PX
+                assert window.columns.currentText()=='6' and window.rows.currentText()=='8' and window.song_model.rowCount()==48
+                assert window.search.font().pixelSize()==DOWNLOAD_UI.BODY_PX
                 arrow=Path(arrow_image(get_palette(mode).TEXT_SECONDARY));assert arrow.is_file() and arrow.stat().st_size>0
                 assert arrow_image(get_palette(mode).TEXT_SECONDARY)==str(arrow).replace('\\','/')
                 for width in (1000,1280,1600):
                     window.resize(min(width,app.primaryScreen().availableGeometry().width()),min(824,app.primaryScreen().availableGeometry().height()-40));QTest.qWait(80)
-                    window.show_song(records[0]);QTest.qWait(80)
+                    window.show_song(records[0]);window.more_details.setChecked(True);QTest.qWait(80)
                     assert window.download_one.parentWidget() is window.detail_panel
                     assert window.detail_panel.rect().contains(window.download_one.geometry())
                     assert window.details.horizontalScrollBar().maximum()==0 and window.details.verticalScrollBar().maximum()>0,(language,mode,width,window.details.horizontalScrollBar().maximum(),window.details.verticalScrollBar().maximum(),window.song_info.size())
                     before=window.download_one.mapTo(window,QPoint()).y();window.details.verticalScrollBar().setValue(window.details.verticalScrollBar().maximum());QTest.qWait(20)
                     assert window.download_one.mapTo(window,QPoint()).y()==before
                     assert window.footer.geometry().bottom()<window.player.geometry().top()
-                    assert all(button.width()>=button.sizeHint().width() for button in window.categories.buttons.values())
+                    assert all(button.width()>=button.sizeHint().width() for key,button in window.categories.buttons.items() if key!="Search")
                 window.resize(1280,824);QTest.qWait(50)
                 window.columns.setCurrentText('3');window.columns.setFocus()
                 QTest.mouseClick(window.columns,Qt.MouseButton.LeftButton,pos=QPoint(window.columns.width()-12,window.columns.height()//2));QTest.qWait(30)
@@ -84,7 +84,7 @@ def child():
                 window.close()
                 for thread in tuple(session.tasks._threads):thread.join()
     assert not any(n.startswith(('tkinter','customtkinter')) for n in sys.modules)
-    print('PASS design: bilingual/themes/scales, native popup keyboard, fixed detail CTA, equal card targets, 21 items, cached covers, no GUI errors')
+    print('PASS design: bilingual/themes/scales, native popup keyboard, fixed detail CTA, equal card targets, 48 items, cached covers, no GUI errors')
 
 if __name__=='__main__':
     if '--child' in sys.argv:child()

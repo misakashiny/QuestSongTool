@@ -66,6 +66,11 @@ def child():
                 snapshot=[dict(window.model.rows[0],title='Different title, same folder'),dict(window.model.rows[2]),
                           dict(window.model.rows[0],folder='quest-only',title='Only on Quest')]
                 window.set_quest_snapshot(snapshot,'controlled read-only fixture')
+                assert not window.missing_model.rows and not window.identity_checks.complete()
+                # View fixtures declare known content; real map hashes and
+                # cross-folder matches are verified in smoke_usability.
+                window.identity_checks.values={side:{row['folder']:hashlib.sha1(row['folder'].encode()).hexdigest() for row in model.rows} for side,model in (('local',window.model),('quest',window.quest_model))}
+                window.update_comparison()
                 assert window.quest_ready and names(window.quest_model)=={'row000','row002','quest-only'}
                 assert names(window.missing_model)==names(window.model)-names(window.quest_model)
                 assert window.missing_origin=='local' and all(row['origin']=='local' for row in window.missing_model.rows)
@@ -128,6 +133,8 @@ def child():
                     assert window.grid.mapTo(window,QPoint(0,0)).x()>=0
                 # Empty-but-valid differs from not-yet-loaded; clearing cannot invent missing.
                 window.set_quest_snapshot([], 'valid empty fixture');assert len(window.missing_model.rows)==0
+                window.identity_checks.values={'quest':{},'local':{row['folder']:hashlib.sha1(row['folder'].encode()).hexdigest() for row in window.model.rows}}
+                window.update_comparison()
                 window.missing_side.setCurrentIndex(0);assert len(window.missing_model.rows)==160
                 window.clear_quest_snapshot();assert not window.missing_model.rows and not window.missing_side.isEnabled()
                 window.set_quest_snapshot(snapshot,'controlled read-only fixture');window.missing_side.setCurrentIndex(0)

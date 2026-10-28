@@ -17,9 +17,10 @@ from ..theme import DESKTOP, DOWNLOAD, SPACE
 from ..workers import human_size
 from .library_covers import local_cover
 from .cover_browser import CoverCache
+from .playlist_widgets import RoundedCover
 
 
-class DetailCover(QLabel):
+class DetailCover(RoundedCover):
     """One normalized cover, decoded once; bounded DPR-aware scaled images."""
     def __init__(self):
         super().__init__()

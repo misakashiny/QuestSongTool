@@ -39,3 +39,4 @@ dist/
 # 个人下载记录及控件检查现场（仅本机备份）
 /downloads.json
 /qi_reports/
+/push_staging/

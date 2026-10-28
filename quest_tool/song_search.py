@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import math
+import logging
 import re
 import tempfile
 import threading
@@ -10,7 +11,7 @@ import urllib.parse
 import copy
 from pathlib import Path
 
-from .downloads import BeatSaverClient, DownloadError, check_cancel, safe_web_url
+from .downloads import BeatSaverClient, DownloadError, check_cancel, published_version, safe_web_url
 from .workers import TaskRunner
 from .search_filters import browse_params
 
@@ -28,20 +29,9 @@ def search_map(data: dict) -> dict | None:
     """Reduce untrusted website metadata to a small, validated display record."""
     if not isinstance(data, dict) or not re.fullmatch(r"[0-9a-fA-F]{1,12}", str(data.get("id", ""))):
         return None
-    versions = data.get("versions")
-    if not isinstance(versions, list):
-        return None
-    published = [v for v in versions if isinstance(v, dict) and v.get("state") == "Published"]
-    if not published:
-        return None
-    version = max(published, key=lambda v: str(v.get("createdAt", "")))
-    digest = str(version.get("hash", "")).lower()
-    if not re.fullmatch(r"[0-9a-f]{40}", digest):
-        return None
-    try:
-        safe_web_url(str(version.get("downloadURL", "")))
-    except (DownloadError, ValueError):
-        return None
+    try:version = published_version(data)
+    except DownloadError:return None
+    digest = str(version['hash']).lower()
     meta = data.get("metadata") or {}
     stats = data.get("stats") or {}
     if not isinstance(meta, dict) or not isinstance(stats, dict):
@@ -98,14 +88,26 @@ class SearchClient(BeatSaverClient):
         if filters is None:
             extra.pop("automapper", None)
         params = urllib.parse.urlencode({"q": query, "order": preset_order or order, "pageSize": page_size, **extra})
+        map_key = None
+        if mode == 'Search':
+            match = re.fullmatch(r'(?:#|!bsr\s+)([0-9a-fA-F]{1,12})', query)
+            if match:map_key = match[1].lower()
+            elif query.startswith('https://'):
+                url = urllib.parse.urlsplit(query)
+                match = re.fullmatch(r'/maps/([0-9a-fA-F]{1,12})/?', url.path)
+                if url.netloc.lower() in ('beatsaver.com','www.beatsaver.com') and match and not url.query and not url.fragment:
+                    map_key = match[1].lower()
+        if map_key and page:
+            return dict(rows=[],has_next=False,page=page,query=query,order=order)
         with tempfile.TemporaryDirectory(prefix="quest-search-") as folder:
             path = Path(folder) / "results.json"
-            self.fetch(f"https://api.beatsaver.com/search/text/{page}?{params}", path,
+            endpoint = f'https://api.beatsaver.com/maps/id/{map_key}' if map_key else f"https://api.beatsaver.com/search/text/{page}?{params}"
+            self.fetch(endpoint, path,
                        cancel, lambda _done, _total: None, limit=4 * 1024 * 1024)
             check_cancel(cancel)
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
-                docs = data["docs"]
+                docs = [data] if map_key else data["docs"]
                 if not isinstance(docs, list) or len(docs) > page_size:
                     raise ValueError("invalid search results")
                 rows = {}
@@ -113,10 +115,11 @@ class SearchClient(BeatSaverClient):
                     item = search_map(doc)
                     if item:
                         rows[item["id"]] = item
-                return {"rows": list(rows.values()), "has_next": len(docs) == page_size,
+                return {"rows": list(rows.values()), "has_next": not map_key and len(docs) == page_size,
+                        "unavailable": len(docs)-len(rows),
                         "page": page, "query": query, "order": order}
             except (ValueError, KeyError, TypeError, AttributeError) as exc:
-                raise DownloadError("metadata", str(exc)) from exc
+                raise DownloadError("search_response", str(exc)) from exc
 
 
 class SearchSession:
@@ -170,6 +173,9 @@ class SearchSession:
             except Exception as exc:
                 if not cancel.is_set():
                     code = exc.code if isinstance(exc, DownloadError) else "unexpected"
+                    logger = logging.getLogger('quest_tool.qt_preview')
+                    if logger.handlers:
+                        logger.warning('Request failed: client=%s code=%s',type(self.client).__name__,code)
                     self.tasks.emit("search_error", payload={"generation": generation, "code": code})
 
     def close(self):

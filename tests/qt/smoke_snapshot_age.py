@@ -19,7 +19,7 @@ def child():
     from quest_tool.qt_ui.library_window import LibraryWindow
     app = QApplication([]);app.setStyle('Fusion')
     errors = []
-    sys.excepthook = lambda kind, value, tb: errors.append(repr(value))
+    sys.excepthook = lambda kind, value, tb: (errors.append(repr(value)),sys.__excepthook__(kind,value,tb))
     def wait(predicate):
         deadline = time.monotonic()+5
         while not predicate() and time.monotonic() < deadline:
@@ -50,7 +50,8 @@ def child():
             browser.discover();wait(lambda:not browser.busy)
             browser.choices.setCurrentIndex(1);browser.read_selected()
             wait(lambda:not browser.busy)
-            assert window.quest_ready and notice.label.isVisible() and notice.timer.isActive()
+            assert window.quest_ready and not notice.label.isVisible() and notice.timer.isActive()
+            assert '2026-10-23 12:00:00 +0000' in window.quest_summary.toolTip()
             assert '2026-10-23 12:00:00 +0000' in notice.label.toolTip()
             assert tr('qt.snapshot.just_now') in notice.label.text()
             calls = list(provider.calls)
@@ -76,14 +77,13 @@ def child():
                     window.mode.setCurrentIndex(window.mode.findData(mode))
                     window.resize(1000,720);QTest.qWait(20)
                     assert not notice.label.isVisible()
-                    assert tr('qt.snapshot.cached_short') in window.quest_summary.text()
+                    assert tr('qt.snapshot.cached_short') in window.quest_summary.toolTip()
                     window.resize(1000,640);QTest.qWait(20)
                     assert window.quest_table.viewport().height() >= 70
                     window.resize(1000,760);QTest.qWait(20)
-                    assert notice.label.isVisible() and notice.label.width() > 100
-                    assert notice.label.height() >= notice.label.heightForWidth(notice.label.width())
-                    assert notice.label.geometry().bottom() <= notice.label.parentWidget().height()
-                    assert tr('qt.snapshot.cached') in notice.label.text()
+                    assert not notice.label.isVisible()
+                    assert tr('qt.snapshot.cached') in window.quest_summary.toolTip()
+                    assert window.quest_summary.height() >= window.quest_summary.heightForWidth(window.quest_summary.width())
             # Invalid replacement input must not stamp or erase a valid snapshot.
             captured = notice.completed_at
             try:window.set_quest_snapshot([{'bad': True}], 'bad')

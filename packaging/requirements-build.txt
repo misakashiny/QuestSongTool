@@ -1,0 +1,5 @@
+# Reproducible versions used for the 20.4 Windows x64 single-file build.
+PyInstaller==6.12.0
+PySide6==6.12.0
+Pillow==11.1.0
+miniaudio==1.71

@@ -1,0 +1,15 @@
+Quest Song Tool desktop distribution
+
+This executable bundles Python, PySide6/Qt, Pillow, miniaudio/CFFI and Android
+platform-tools. Their original license terms and copyright notices apply.
+PyInstaller's hooks collect package license files where provided by the installed
+distributions. Android platform-tools NOTICE.txt is included under platform-tools/.
+
+Upstream source and licensing:
+Python: https://www.python.org/psf/license/
+Qt for Python: https://www.qt.io/licensing/
+Pillow: https://github.com/python-pillow/Pillow/blob/main/LICENSE
+miniaudio: https://github.com/irmen/pyminiaudio
+Android platform-tools: https://developer.android.com/tools/releases/platform-tools
+
+No Beat Saber game files, song archives, user databases or credentials are included.

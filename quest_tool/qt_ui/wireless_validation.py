@@ -22,13 +22,28 @@ def port(value):
 def validated(request):
     if not isinstance(request,dict):raise DownloadError('wireless_input')
     mode = request.get('mode')
-    if mode=='scan':return {'mode':mode}
-    if mode not in ('usb','connect','pair'):raise DownloadError('wireless_input')
-    item = {'mode':mode,'port':port(request.get('port'))}
+    operation = request.get('operation','')
+    if not isinstance(operation,str) or len(operation)>64:raise DownloadError('wireless_input')
+    if mode in ('scan','discover','diagnose'):return {'mode':mode,'operation':operation}
+    if mode not in ('usb','connect','pair','paired_connect','reconnect','check'):raise DownloadError('wireless_input')
+    value = request.get('port','')
+    item = {'mode':mode,'port':None if mode in ('pair','paired_connect') and value=='' else port(value),'operation':operation}
     host = request.get('host','')
     if not isinstance(host,str):raise DownloadError('wireless_address')
     host = host.strip()
     item['host'] = address(host) if host or mode!='usb' else ''
+    if mode in ('reconnect','check'):
+        hardware=request.get('hardware')
+        if not isinstance(hardware,str) or re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,255}',hardware) is None:
+            raise DownloadError('device_rejected')
+        item['hardware']=hardware
+    if mode=='check':
+        serial=request.get('serial',f"{item['host']}:{item['port']}")
+        if not isinstance(serial,str) or re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,255}',serial) is None:
+            raise DownloadError('device_rejected')
+        if serial!=f"{item['host']}:{item['port']}" and not serial.endswith('._adb-tls-connect._tcp'):
+            raise DownloadError('device_rejected')
+        item['serial']=serial
     if mode=='usb':
         device = request.get('device')
         if not isinstance(device,dict) or any(not isinstance(device.get(k),str) for k in ('serial','hardware')):
@@ -36,8 +51,9 @@ def validated(request):
         if re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,255}',device['serial']) is None:
             raise DownloadError('wireless_usb')
         item['device'] = dict(device)
-    if mode=='pair':
+    if mode in ('pair','paired_connect'):
         item['pair_port'] = port(request.get('pair_port'))
+    if mode=='pair':
         code = request.get('code','')
         if not isinstance(code,str) or re.fullmatch(r'[0-9]{6}',code) is None:
             raise DownloadError('wireless_code')

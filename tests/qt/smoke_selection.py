@@ -65,6 +65,7 @@ def child():
     with tempfile.TemporaryDirectory(prefix='quest-selected-') as folder:
         root = Path(folder); manager = Manager(root)
         window = DownloadWindow(songs=songs)
+        window.columns.setCurrentText('3');window.rows.setCurrentText('7')
         window.enable_downloads(root, manager)
         queue = window.download_browser
         wait(lambda: not queue.importer.scanning)
@@ -176,7 +177,7 @@ def child():
 
     # A committed search change clears selections and the open panel together.
     client = ScriptedClient(); session = SearchSession(client)
-    window = DownloadWindow(); window.enable_search(session)
+    window = DownloadWindow();window.columns.setCurrentText('3');window.rows.setCurrentText('7');window.enable_search(session)
     wait(lambda: window.browser.state == 'ready')
     window.song_model.select_page(); window.selection_browser.open()
     dialog = window.selection_browser.dialog

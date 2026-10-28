@@ -128,12 +128,13 @@ def child():
                 local=base/'ui-target';local.mkdir();assert window.set_target(str(local));wait(lambda:window.local_ready)
                 browser=window.device_browser;browser.selected=selected
                 rows=[dict(folder=name,title=name,author='Artist',duration=90,error='') for name in ('中文歌曲',"song's name",'third')]
-                window.set_quest_snapshot(rows,selected['identity'])
+                window.set_quest_snapshot(rows,selected['identity'],skipped=1)
                 panel=window.transfers;panel.select.click();assert len(window.quest_model.checked)==3
                 panel.pull.click();dialog=panel.dialog;assert dialog is not None
                 assert not list(local.iterdir()) and dialog.generation is None
                 dialog.start.click();wait(lambda:dialog.result is not None)
-                assert dialog.result['ok']==3
+                assert dialog.result['ok']==3 and window.quest_incomplete
+                assert not panel.missing.isEnabled() and not panel.push.isEnabled()
                 wait(lambda:window.local_ready and len(window.model.rows)==3)
                 assert not any(thread==threading.get_ident() for thread,cmd in calls[ui_start:] if cmd[0]=='pull')
                 dialog.close();wait(lambda:panel.dialog is None)
@@ -148,6 +149,10 @@ def child():
                 window.missing_side.setCurrentIndex(window.missing_side.findData('quest'))
                 window.missing_model.checked.add('third');panel.render();assert not panel.missing.isEnabled()
                 other=base/'ui-empty';other.mkdir();window.set_target(str(other));wait(lambda:window.local_ready)
+                # This transport test supplies already-verified identities;
+                # smoke_usability exercises the real content verification worker.
+                window.identity_checks.values={'local':{},'quest':{row['folder']:str(i)*40 for i,row in enumerate(rows,1)}}
+                window.update_comparison()
                 window.missing_side.setCurrentIndex(window.missing_side.findData('local'))
                 window.missing_model.checked.add('third');panel.render();assert panel.missing.isEnabled()
                 panel.missing.click();assert panel.dialog.plan.folders==('third',)
@@ -162,8 +167,7 @@ def child():
                 for width in (1000,1400):
                     window.resize(width,850);app.processEvents()
                     for button in (panel.select,panel.clear,panel.pull,panel.missing):
-                        assert button.width()>40 and button.height()>0
-                        assert panel.page.rect().contains(button.geometry()),(button.text(),button.geometry(),panel.page.rect())
+                        assert not button.isVisible()
                 shots=os.environ.get('QUEST_QT_SHOTS')
                 if shots:
                     path=Path(shots);path.mkdir(parents=True,exist_ok=True)
@@ -195,5 +199,5 @@ if __name__=='__main__':
             for scale in ('1','1.25','1.5'):
                 result=subprocess.run([sys.executable,'-B',__file__,'--child'],cwd=ROOT,
                     env=dict(os.environ,TEST_LANG=language,QT_SCALE_FACTOR=scale),capture_output=True,timeout=100)
-                print(language,scale,result.stdout.decode('utf-8','replace'),result.stderr.decode('utf-8','replace'),flush=True)
+                print(language,scale,result.stdout.decode(sys.stdout.encoding or 'utf-8','backslashreplace'),result.stderr.decode(sys.stdout.encoding or 'utf-8','backslashreplace'),flush=True)
                 assert result.returncode==0

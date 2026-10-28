@@ -58,11 +58,37 @@ def child():
             assert browser.status.text().startswith(tr('qt.device.state.partial',count=1,songs=1)+' · ')
             assert window.missing_model.rowCount()==0 and window.reports.binding() is None and window.transfers.binding() is None
             window.quest_model.checked={'good'};window.model.checked={'good'};window.transfers.render()
-            assert not window.transfers.pull.isEnabled() and not window.transfers.push.isEnabled()
+            assert window.transfers.pull.isEnabled() and not window.transfers.push.isEnabled()
+            assert not window.transfers.missing.isEnabled() and not window.transfers.push_missing.isEnabled()
+            assert window.transfers.binding(selected_pull=True) is not None
+            assert window.transfers.status.text()==tr('qt.transfer.partial_pull_hint',count=1)
+            from PySide6.QtCore import Qt
+            for width in (1000,1400):
+                window.resize(width,850);app.processEvents()
+                label=window.transfers.status
+                needed=label.fontMetrics().boundingRect(label.contentsRect(),Qt.TextFlag.TextWordWrap,label.text())
+                assert label.height()>=needed.height(),(label.height(),needed.height())
+                for button in (window.transfers.pull,window.transfers.missing,window.transfers.push):
+                    assert button.width()>=button.sizeHint().width()
+            shots=os.environ.get('QUEST_QT_SHOTS')
+            if shots:
+                path=Path(shots);path.mkdir(parents=True,exist_ok=True)
+                window.grab().save(str(path/f'partial-{os.environ["TEST_LANG"]}-{os.environ.get("QT_SCALE_FACTOR","1")}.png'))
+            window.transfers.open('missing');assert window.transfers.dialog is None
+            window.transfers.open('local','to_quest');assert window.transfers.dialog is None
+            window.transfers.pull.click();dialog=window.transfers.dialog
+            assert dialog is not None and dialog.plan.folders==('good',) and dialog.before_start()
+            browser.busy=True;assert not dialog.before_start();browser.busy=False
+            browser.connection_open=True;assert not dialog.before_start();browser.connection_open=False
+            saved=window.quest_identity;window.quest_identity='different';assert not dialog.before_start();window.quest_identity=saved
+            dialog.close();app.processEvents()
+            window.quest_model.checked={'not-in-snapshot'};window.transfers.render();assert not window.transfers.pull.isEnabled()
+            window.quest_model.checked={'good'}
             assert not window.reports.button.isEnabled()
             provider.invalid=False;browser.read_selected();wait(lambda:not browser.busy)
             assert browser.state=='ready' and not window.quest_incomplete
-            wait(lambda:window.reports.button.isEnabled())
+            # A clean listing is not proof of content identity.
+            assert not window.reports.button.isEnabled() and window.identity_checks.button.isEnabled()
             assert window.transfers.binding() is not None
             window.set_quest_snapshot(result['rows'],selected['identity'],skipped=1)
             assert window.quest_incomplete
@@ -70,7 +96,7 @@ def child():
             assert provider.read_names and all(name=='good' for name in provider.read_names)
             assert not errors,errors
         finally:window.close();window.wait_closed()
-    print('PASS binary names: no replacement path, partial warning, comparison/report/transfer blocked, clean reread and clear')
+    print('PASS binary names: no replacement path, partial warning, comparison/report/push blocked, selected pull allowed, clean reread and clear')
 
 if __name__=='__main__':
     if '--child' in sys.argv:child()

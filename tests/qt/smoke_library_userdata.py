@@ -116,7 +116,7 @@ def child():
                 window.details.scroll.ensureWidgetVisible(user.edit); app.processEvents()
                 shots=Path(os.environ['QUEST_QT_SHOTS']); shots.mkdir(parents=True,exist_ok=True)
                 window.grab().save(str(shots/f'userdata-{language}-{os.environ.get("QT_SCALE_FACTOR")}.png'))
-                window.preview.length.setCurrentIndex(window.preview.length.findData(60)); window.preview.volume.setValue(35)
+                assert not hasattr(window.preview,'length');window.preview.volume.setValue(35)
                 user.rating.setCurrentIndex(2)
                 window.close(); window.wait_closed()
                 assert not any(t.is_alive() for t in user.queue.tasks._threads)
@@ -125,7 +125,7 @@ def child():
                     assert db.get_rating(identities[1],'same')==(5,'other library')
                 with closing(sqlite3.connect(dbpath)) as conn: assert schema==conn.execute('SELECT type,name,sql FROM sqlite_master ORDER BY name').fetchall()
                 restored=LibraryWindow(sandbox,language)
-                assert restored.preview.length.currentData()==60 and restored.preview.volume.value()==35
+                assert restored.preview.play_seconds==0 and restored.preview.volume.value()==35
                 assert restored.target is None and not restored.userdata.queue.started
                 restored.close(); restored.wait_closed()
                 print('PASS',language,'legacy schema/location/rating clear/comment cancel-limit-shortcut/failure draft retry/order/stale/Quest/close/preferences')

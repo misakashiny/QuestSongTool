@@ -7,12 +7,13 @@ from PySide6.QtWidgets import (
 
 from ..messages import tr
 from ..theme import DESKTOP, SPACE
+from .surfaces import action_icons
 
 
 GROUPS = (
     ('qt.help.general',(
         ('Ctrl+O','qt.help.choose'),('F5','qt.help.refresh'),('Ctrl+F','qt.help.search'),
-        ('Ctrl+D','qt.help.details'),('Ctrl+1','qt.help.quest'),('Ctrl+2','qt.help.local'),('F1','qt.help.show'),
+        ('Ctrl+D','qt.help.details'),('F1','qt.help.show'),
     )),
     ('qt.help.results',(
         ('Ctrl+A','qt.help.visible'),('Ctrl+Shift+A','qt.help.all'),('Ctrl+C','qt.help.copy'),
@@ -67,6 +68,7 @@ class HelpDialog(QDialog):
         self.buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         self.close_button=self.buttons.button(QDialogButtonBox.StandardButton.Close)
         self.close_button.setText(tr('qt.help.close'));self.close_button.setDefault(True)
+        action_icons((self.close_button,'back'))
         self.buttons.rejected.connect(self.reject);box.addWidget(self.buttons)
 
 

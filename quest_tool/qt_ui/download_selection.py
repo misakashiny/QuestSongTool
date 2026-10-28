@@ -11,6 +11,7 @@ from ..messages import tr
 from ..theme import DESKTOP, SPACE
 from .song_model import Song
 from .song_status import StatusIndex
+from .surfaces import style_table, action_icons
 
 
 class SelectedModel(QAbstractTableModel):
@@ -104,6 +105,8 @@ class SelectedDialog(QDialog):
         row.setSpacing(SPACE.M)
         self.preview = QPushButton(); self.remove = QPushButton(); self.download = QPushButton(); self.close_button = QPushButton()
         self.download.setProperty('role', 'primary')
+        style_table(self.table)
+        action_icons((self.preview,'play'),(self.remove,'trash'),(self.download,'download'),(self.close_button,'back'))
         for index, button in enumerate((self.preview, self.remove, self.download, self.close_button)):
             row.addWidget(button, index//2, index % 2)
         layout.addLayout(row)
@@ -191,9 +194,7 @@ class SelectionBrowser(QObject):
         self.dialog = None
         self.closed = self.refreshing = False
         self.index = StatusIndex()
-        self.status = QLabel(); self.status.setWordWrap(True); self.status.setTextFormat(Qt.TextFormat.PlainText)
-        box = window.song_info.parentWidget().layout()
-        box.insertWidget(box.indexOf(window.song_info), self.status)
+        self.status = window.detail_status
         window.selection.clicked.connect(self.open)
         self.retranslate()
 

@@ -13,6 +13,7 @@ from ..database import Database
 from ..fsapi import Location
 from ..messages import tr
 from ..workers import TaskRunner
+from .surfaces import action_icons
 
 
 class UserDataQueue:
@@ -99,6 +100,8 @@ class CommentDialog(QDialog):
         self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         self.buttons.button(QDialogButtonBox.StandardButton.Save).setText(tr('qt.userdata.save'))
         self.buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(tr('qt.userdata.cancel'))
+        self.buttons.button(QDialogButtonBox.StandardButton.Save).setProperty('role','primary')
+        action_icons((self.buttons.button(QDialogButtonBox.StandardButton.Save),'save'),(self.buttons.button(QDialogButtonBox.StandardButton.Cancel),'close'))
         self.buttons.accepted.connect(self.save); self.buttons.rejected.connect(self.reject)
         box.addWidget(self.buttons)
         self.editor.textChanged.connect(self.update_count)
@@ -147,6 +150,7 @@ class LibraryUserData(QObject):
             policy = QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             policy.setHeightForWidth(True); label.setSizePolicy(policy)
         self.retry = QPushButton(); self.retry.clicked.connect(self.retry_current); box.addWidget(self.retry)
+        action_icons((self.edit,'edit'),(self.retry,'refresh'))
         window.details.extras.addWidget(self.page)
         window.details.selectionChanged.connect(self.selection_changed)
         self.timer = QTimer(self); self.timer.setInterval(50); self.timer.timeout.connect(self.poll)

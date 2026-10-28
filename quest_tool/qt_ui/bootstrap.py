@@ -41,6 +41,7 @@ def run(argv=None):
     app.setStyle("Fusion")
     runtime = None
     window = None
+    navigation = None
     previous_hook = sys.excepthook
     try:
         runtime = PreviewRuntime(options.data_dir)
@@ -81,6 +82,8 @@ def run(argv=None):
             window.enable_covers()
             window.enable_preview()
             window.enable_downloads(runtime.path)
+            from .download_navigation import DownloadNavigation
+            navigation = DownloadNavigation(window,runtime.path)
         screen = app.primaryScreen()
         if screen:
             available = screen.availableGeometry()
@@ -95,6 +98,7 @@ def run(argv=None):
         return 1
     finally:
         sys.excepthook = previous_hook
+        if navigation is not None:navigation.close()
         if isinstance(window, DownloadWindow) and window.download_browser:
             window.download_browser.close()
             window.download_browser.wait_closed()

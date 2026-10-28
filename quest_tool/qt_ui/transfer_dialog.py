@@ -1,10 +1,13 @@
 """Explicitly injected transfer dialog; all widget updates remain on UI thread."""
 from PySide6.QtCore import QTimer, Signal, Qt
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPlainTextEdit, QProgressBar, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QLabel, QPlainTextEdit, QProgressBar, QPushButton, QVBoxLayout
 from dataclasses import replace
+
+from .surfaces import surface, action_strip, action_icons
 
 from ..messages import tr
 from ..theme import SPACE
+from .transfer_preflight import estimate_local_tree, format_bytes
 
 
 class TransferDialog(QDialog):
@@ -22,7 +25,7 @@ class TransferDialog(QDialog):
         self.before_start = before_start
         prefix = 'qt.transfer.pull_' if plan.direction=='to_local' else 'qt.transfer.push_'
         QDialog.setWindowTitle(self, tr('qt.transfer.title' if simulation else prefix+'title'))
-        QDialog.resize(self, 620, 300)
+        QDialog.resize(self, 620, 360)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(SPACE.L, SPACE.L, SPACE.L, SPACE.L)
         self.scope = QLabel(tr('qt.transfer.offline' if simulation else prefix+'scope'))
@@ -34,7 +37,14 @@ class TransferDialog(QDialog):
             count=len(plan.folders), local=plan.local, device=binding['device_id'], root=binding['root']))
         self.summary.setWordWrap(True)
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
+        self.summary.setProperty("uiRole","note")
         layout.addWidget(self.summary)
+        self.preflight = QLabel()
+        self.preflight.setWordWrap(True)
+        self.preflight.setTextFormat(Qt.TextFormat.PlainText)
+        self.preflight.setProperty("uiRole", "note")
+        layout.addWidget(self.preflight)
+        self.render_preflight()
         self.status = QLabel(tr('qt.transfer.ready' if simulation else prefix+'ready'))
         self.status.setTextFormat(Qt.TextFormat.PlainText)
         self.status.setWordWrap(True)
@@ -47,7 +57,14 @@ class TransferDialog(QDialog):
         self.failures.setMaximumHeight(130)
         self.failures.hide()
         layout.addWidget(self.failures)
-        row = QHBoxLayout()
+        self.result_summary = QLabel()
+        self.result_summary.setWordWrap(True)
+        self.result_summary.setTextFormat(Qt.TextFormat.PlainText)
+        self.result_summary.setProperty("uiRole", "note")
+        self.result_summary.hide()
+        layout.addWidget(self.result_summary)
+        surface(self)
+        self.status.setProperty("uiRole","section")
         self.start = QPushButton(tr('qt.transfer.start' if simulation else prefix+'start'))
         self.pause = QPushButton(tr('qt.transfer.pause'))
         self.cancel_button = QPushButton(tr('qt.transfer.cancel'))
@@ -55,8 +72,9 @@ class TransferDialog(QDialog):
         self.retry.setEnabled(False)
         self.pause.setEnabled(False)
         self.cancel_button.setEnabled(False)
-        for button in (self.start, self.pause, self.cancel_button, self.retry):row.addWidget(button)
-        layout.addLayout(row)
+        self.start.setProperty('role','primary');self.cancel_button.setProperty('role','danger')
+        action_icons((self.start,'transfer'),(self.pause,'pause'),(self.cancel_button,'stop'),(self.retry,'refresh'))
+        layout.addWidget(action_strip(self.start,self.pause,self.cancel_button,self.retry))
         self.start.clicked.connect(self.begin)
         self.pause.clicked.connect(self.toggle_pause)
         self.cancel_button.clicked.connect(self.queue.cancel)
@@ -79,10 +97,12 @@ class TransferDialog(QDialog):
         self.pause.setEnabled(True)
         self.cancel_button.setEnabled(True)
         self.failures.clear();self.failures.hide()
+        self.result_summary.clear();self.result_summary.hide()
         self.timer.start()
 
     def toggle_pause(self):
         paused = self.queue.toggle_pause()
+        action_icons((self.pause,'play' if paused else 'pause'))
         self.pause.setText(tr('qt.transfer.resume' if paused else 'qt.transfer.pause'))
         self.status.setText(tr('qt.transfer.paused' if paused else 'qt.transfer.running'))
 
@@ -108,6 +128,16 @@ class TransferDialog(QDialog):
         self.summary.setText(tr('qt.transfer.plan',direction=tr('qt.transfer.'+plan.direction),
             count=len(names),local=plan.local,device=binding['device_id'],root=binding['root']))
         self.status.setText(tr('qt.transfer.retry_ready'))
+        self.result_summary.clear();self.result_summary.hide()
+
+    def render_preflight(self):
+        if self.plan.direction == 'to_quest':
+            estimate = estimate_local_tree(self.plan.local, self.plan.folders)
+            key = 'qt.transfer.preflight_limited' if estimate['limited'] else 'qt.transfer.preflight_local'
+            self.preflight.setText(tr(key, size=format_bytes(estimate['bytes'], tr('search.unknown')), files=estimate['files'],
+                                      unreadable=estimate['unreadable'], unsafe=estimate['unsafe']))
+        else:
+            self.preflight.setText(tr('qt.transfer.preflight_remote'))
 
     def poll(self):
         if self.closed:return
@@ -123,6 +153,15 @@ class TransferDialog(QDialog):
                 self.result = data
                 self.status.setText(tr('qt.transfer.result', state=tr('qt.transfer.'+state),
                     ok=data['ok'], skipped=data['skipped'], failed=len(data['failures'])))
+                if state == 'blocked':
+                    self.result_summary.setText(tr('qt.transfer.result_blocked', error=data.get('error') or tr('qt.transfer.blocked')))
+                elif state == 'cancelled':
+                    self.result_summary.setText(tr('qt.transfer.result_cancelled', ok=data['ok'], skipped=data['skipped'],
+                                                    failed=len(data['failures'])))
+                else:
+                    self.result_summary.setText(tr('qt.transfer.result_done', ok=data['ok'], skipped=data['skipped'],
+                                                   failed=len(data['failures'])))
+                self.result_summary.setVisible(True)
                 lines = ([data['error'][:16000]] if data['error'] else [])+[
                     f'{name}: {error}'[:16000] for name,error in data['failures'][:100]]
                 self.status.setToolTip('\n'.join(lines)[:16000])

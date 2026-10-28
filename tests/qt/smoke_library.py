@@ -71,7 +71,7 @@ def child():
         make_song(second,'a','Other library','Artist C',90)
         archive = make_archive(base)
         for language in ('zh','en'):
-            client = Client();window = LibraryWindow(base/'sandbox',language,session=SearchSession(client))
+            client = Client();window = LibraryWindow(base/'sandbox'/language,language,session=SearchSession(client))
             window.show();wait(lambda:window.isVisible())
             try:
                 assert window.target is None and not window.model.rows and not window.reload.isEnabled()

@@ -79,42 +79,44 @@ def child():
                 def select(folder):
                     index = next(window.proxy.index(i,0) for i in range(window.proxy.rowCount()) if window.proxy.index(i,0).data(Qt.ItemDataRole.UserRole)['folder']==folder)
                     window.table.setCurrentIndex(index); window.details.select('local',index)
+                    return index
                 select('first'); controller = window.preview
                 wait(lambda:not window.details.loading)
                 for size in ((1000,640),(1400,850)):
                     window.resize(*size); app.processEvents()
-                    for control in (controller.play, controller.title, controller.length, controller.volume, controller.seek, controller.time):
+                    for control in (controller.play, controller.title, controller.previous, controller.next_button, controller.volume, controller.seek, controller.time):
                         assert control.isVisible() and control.width()>20 and control.height()>0
                     assert controller.time.width() >= controller.time.fontMetrics().horizontalAdvance(controller.time.text())
                 def playing(): return not controller.pending and controller.player is not None and controller.player.is_playing()
                 QTest.mouseClick(controller.play, Qt.MouseButton.LeftButton)
                 wait(lambda:playing() and any(value>100 for value in callbacks))
-                assert controller.total==90 and controller.player.limit_seconds()==30
+                assert controller.total==90 and controller.player.limit_seconds()==0 and not hasattr(controller,'length')
                 controller.volume.setValue(35); assert controller.player.volume()==.35
-                for start in (15,30,45):
+                for fraction,start in ((250,22.5),(500,45),(750,67.5),(250,22.5)):
                     controller.seek.setSliderDown(True); request=controller.request_id
-                    controller.seek.setSliderPosition(500); app.processEvents()
+                    controller.seek.setSliderPosition(fraction); app.processEvents()
                     assert controller.request_id==request
                     controller.seek.setSliderDown(False)
                     wait(lambda:playing() and controller.player.start_offset==start)
-                for seconds in (60,120,0):
-                    controller.length.setCurrentIndex(controller.length.findData(seconds)); assert controller.request_id is None
-                    controller.toggle(); wait(playing); assert controller.player.limit_seconds()==seconds
-                select('second'); assert controller.request_id is None
-                controller.toggle(); controller.stop(); app.processEvents()
+                controller.toggle();assert controller.paused and not controller.player.is_playing()
+                paused_at=controller.position;controller.toggle();wait(playing)
+                assert abs(controller.player.start_offset-paused_at)<.1 and controller.player.limit_seconds()==0
+                controller.play_index('local',select('second'));wait(playing)
+                controller.stop(); app.processEvents()
                 time.sleep(.15); app.processEvents(); assert not controller.player.is_playing()
-                select('missing'); controller.toggle(); wait(lambda:controller.error)
+                controller.play_index('local',select('missing'));wait(lambda:controller.error)
                 assert controller.request_id is None
-                select('first'); hold.set(); entered.clear(); controller.toggle()
+                hold.set();entered.clear();controller.play_index('local',select('first'))
                 wait(entered.is_set); controller.stop(); hold.clear()
                 wait(lambda:not controller.session.tasks.busy())
                 assert not controller.player.is_playing()
                 controller.poll(); assert controller.request_id is None
-                controller.toggle(); wait(playing)
+                controller.play_index('local',select('first'));wait(playing)
                 window.set_quest_snapshot([dict(folder='first',title='Quest',author='',duration=90,error='')], 'test')
                 window.details.select('quest',window.quest_proxy.index(0,0))
-                assert not controller.play.isEnabled() and controller.request_id is None
-                select('first'); controller.toggle(); wait(playing)
+                assert controller.play.isEnabled() and controller.owned() and controller.track_key[0]=='local'
+                request=controller.request_id;controller.play_index('quest',window.quest_proxy.index(0,0));assert controller.request_id==request
+                controller.play_index('local',select('first'));wait(playing)
                 player=controller.player; online=DownloadWindow(language=language,songs=sample_songs())
                 online.enable_preview(SearchSession(PreviewClient(Media(),player)),player)
                 song=replace(sample_songs()[0],preview_url='https://cdn.beatsaver.com/test')

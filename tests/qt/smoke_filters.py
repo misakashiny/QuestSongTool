@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -173,6 +174,7 @@ def child():
     # Real SearchSession/SearchClient plus controlled HTTP, never real media or ZIP.
     set_language('zh')
     window = DownloadWindow()
+    window.columns.setCurrentText('3');window.rows.setCurrentText('7')
     client = ScriptedClient()
     window.enable_search(SearchSession(client))
     window.show()
@@ -282,6 +284,7 @@ if __name__ == '__main__':
     if '--child' in sys.argv:
         child()
     else:
-        for scale in ('1', '1.25', '1.5'):
-            env = dict(os.environ, QT_SCALE_FACTOR=scale)
-            subprocess.run([sys.executable, '-B', __file__, '--child'], env=env, cwd=ROOT, check=True, timeout=180)
+        with tempfile.TemporaryDirectory(prefix='quest-filter-shots-') as folder:
+            for scale in ('1', '1.25', '1.5'):
+                env = dict(os.environ, QT_SCALE_FACTOR=scale,QUEST_QT_SHOTS=os.environ.get('QUEST_QT_SHOTS',folder))
+                subprocess.run([sys.executable, '-B', __file__, '--child'], env=env, cwd=ROOT, check=True, timeout=180)

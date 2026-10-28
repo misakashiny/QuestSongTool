@@ -68,7 +68,7 @@ def child():
             queue = window.download_browser
             results = queue.results
             settle(queue)
-            window.tabs.setCurrentIndex(1)
+            window.show_tasks()
             window.show(); window.resize(1000, 760)
             QTest.qWait(30)
             expected = tr('qt.results.summary', total=8, done=1, exists=1, failed=2,

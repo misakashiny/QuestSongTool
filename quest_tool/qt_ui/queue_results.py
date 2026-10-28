@@ -5,6 +5,8 @@ from PySide6.QtCore import QItemSelection, QItemSelectionModel, Qt
 from PySide6.QtWidgets import QApplication, QComboBox, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from ..downloads import TERMINAL
+from .surfaces import surface, action_icons
+
 from ..messages import tr
 from ..theme import SPACE
 
@@ -14,12 +16,19 @@ class QueueResults(QWidget):
 
     def __init__(self, browser):
         super().__init__()
+        surface(self, "toolbar")
         self.browser = browser
         self.signature = None
         self.translations = None
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(SPACE.M, SPACE.M, SPACE.M, SPACE.M)
         layout.setSpacing(SPACE.S)
+        cards = QHBoxLayout();self.cards = {}
+        for key in ('active','done','exists','attention'):
+            label = QLabel();label.setTextFormat(Qt.TextFormat.PlainText);label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            surface(label,'card');label.setObjectName('downloadTaskStat');label.setProperty('statKind',key)
+            label.setMinimumHeight(64);self.cards[key] = label;cards.addWidget(label,1)
+        layout.addLayout(cards)
         self.summary = QLabel()
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
         self.summary.setWordWrap(True)
@@ -32,6 +41,7 @@ class QueueResults(QWidget):
         self.visible = QLabel()
         self.visible.setTextFormat(Qt.TextFormat.PlainText)
         self.copy_button = QPushButton()
+        action_icons((self.copy_button,'copy'))
         row.addWidget(self.filter)
         row.addWidget(self.visible, 1)
         row.addWidget(self.copy_button)
@@ -74,6 +84,10 @@ class QueueResults(QWidget):
             return
         self.signature = signature
         counts = Counter(row['state'] for row in rows)
+        for key,label in self.cards.items():
+            count = (sum(value for state,value in counts.items() if state not in TERMINAL) if key == 'active'
+                     else counts['failed']+counts['interrupted'] if key == 'attention' else counts[key])
+            label.setText(tr('qt.results.filter.'+key)+'  '+str(count))
         self.summary.setText(tr('qt.results.summary', total=len(rows), done=counts['done'],
             exists=counts['exists'], failed=counts['failed'], interrupted=counts['interrupted'],
             cancelled=counts['cancelled'], active=sum(count for state, count in counts.items() if state not in TERMINAL)))

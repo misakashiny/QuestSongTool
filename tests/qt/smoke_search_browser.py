@@ -72,6 +72,7 @@ def child():
     client = ScriptedClient()
     session = SearchSession(client)
     window = DownloadWindow()
+    window.columns.setCurrentText('3');window.rows.setCurrentText('7')
     window.move(app.primaryScreen().availableGeometry().topLeft())
     window.enable_search(session)
     window.show()
@@ -254,7 +255,7 @@ def child():
     assert not errors, errors
     assert "tkinter" not in sys.modules and "customtkinter" not in sys.modules
     assert "quest_tool.audio" not in sys.modules and "quest_tool.app" not in sys.modules
-    assert all(label.textFormat() == Qt.TextFormat.PlainText for label, _key in window.texts if isinstance(label, QLabel))
+    assert all(label.textFormat() == Qt.TextFormat.PlainText for label, _key in window.texts if isinstance(label, QLabel)), [(key,label.text()) for label,key in window.texts if isinstance(label,QLabel) and label.textFormat() != Qt.TextFormat.PlainText]
     print("PASS M3A: real backend/controlled HTTP, 9 modes, sorting, 21/90 paging, 200 cap, drafts, unknowns, errors, retry, cancel, stale generations, close, UI thread")
 
 
@@ -293,7 +294,7 @@ seen=[]
 def inspect(window):
     if window.browser.state=='loading':
         QTimer.singleShot(10,lambda:inspect(window));return
-    seen.append(window.browser.state=='ready' and window.song_model.rowCount()==21)
+    seen.append(window.browser.state=='ready' and window.song_model.rowCount()==48)
     QApplication.instance().closeAllWindows()
 def show_and_inspect(self):
     show(self);QTimer.singleShot(20,lambda:inspect(self))

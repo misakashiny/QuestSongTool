@@ -872,6 +872,8 @@ _ZH.update({
     'qt.dl.selected': '已选 0 首 · 跨页保留',
     'qt.dl.download': '下载已选 (0)',
     'qt.dl.preview': '试听片段',
+    'qt.player.shuffle': '随机播放',
+    'qt.player.repeat': '单曲循环',
     'qt.dl.position': '试听进度',
     'qt.dl.time': '00:00 / 00:00',
     'qt.dl.page': '第 1 页',
@@ -894,6 +896,8 @@ _EN.update({
     'qt.dl.selected': '0 selected · Kept across pages',
     'qt.dl.download': 'Download selected (0)',
     'qt.dl.preview': 'Preview',
+    'qt.player.shuffle': 'Shuffle',
+    'qt.player.repeat': 'Repeat one',
     'qt.dl.position': 'Preview position',
     'qt.dl.time': '00:00 / 00:00',
     'qt.dl.page': 'Page 1',
@@ -1072,7 +1076,8 @@ _ZH.update({
     'qt.transfer.clear_quest':'清空 Quest 勾选',
     'qt.transfer.pull_selected':'导入勾选 → 本地',
     'qt.transfer.pull_missing':'导入勾选的本地缺失',
-    'qt.transfer.pull_hint':'已勾选 {count} 首可读取歌曲；需先载入两侧曲库。',
+    'qt.transfer.partial_pull_hint':'曲库有异常目录：仅可导入勾选的正常歌曲（{count} 首）；补齐和写入 Quest 已禁用。',
+    'qt.transfer.pull_hint':'已勾选 {count} 首可读取歌曲。可导入电脑，具体可用条件见按钮提示。',
     'qt.transfer.pull_library_scope':'M7B2A 曲库预览 · 已启用 Quest → 本地导入；不向 Quest 写入或删除。',
     'qt.transfer.cli_pull':'启用 Quest → 本地导入；需 --library --quest-adb，仍须手动选设备、载入并确认。',
     'qt.transfer.cli_conflict':'--quest-pull / --quest-push 需要同时使用 --library 和 --quest-adb。',
@@ -1086,7 +1091,8 @@ _EN.update({
     'qt.transfer.clear_quest':'Clear Quest checks',
     'qt.transfer.pull_selected':'Import checked → local',
     'qt.transfer.pull_missing':'Import checked local missing',
-    'qt.transfer.pull_hint':'{count} readable songs checked; load both libraries first.',
+    'qt.transfer.partial_pull_hint':'Incomplete library: import checked readable songs only ({count}). Missing-song actions and writes to Quest are disabled.',
+    'qt.transfer.pull_hint':'{count} readable songs checked. See button hints for requirements.',
     'qt.transfer.pull_library_scope':'M7B2A library preview · Quest → local import enabled; no Quest writes or deletion.',
     'qt.transfer.cli_pull':'Enable Quest → local import; requires --library --quest-adb and manual device selection, loading and confirmation.',
     'qt.transfer.cli_conflict':'--quest-pull / --quest-push require both --library and --quest-adb.',
@@ -1120,6 +1126,9 @@ _EN.update({
 _ZH.update({'qt.transfer.history': '传输事务记录', 'qt.transfer.history_hint': '仅查看本机日志，不能证明设备当前状态。不会恢复、清理、删除或重放事务。原始字段名用于排查。', 'qt.transfer.history_state': '状态', 'qt.transfer.history_folder': '歌曲目录', 'qt.transfer.history_id': '事务文件', 'qt.transfer.history_refresh': '刷新本机日志', 'qt.transfer.history_failed': '无法读取日志目录。未访问设备或修改任何记录。', 'qt.transfer.history_invalid': '记录不可用：格式、身份或路径未通过校验。', 'qt.transfer.history_limited': '显示范围受限：仅检查前1000个目录项中的最多100条JSON记录。', 'qt.transfer.history_review': '需核查 / 状态未确认', 'qt.transfer.history_backup': '已提交，备份保留', 'qt.transfer.history_committed': '日志记为已提交', 'qt.transfer.retry': '重新确认失败项', 'qt.transfer.retry_blocked': '设备或目录状态已改变。请先重新读取同一设备快照并确认本地目录，再重试。', 'qt.transfer.retry_ready': '已准备本次明确失败的歌曲，请再次确认并开始。已有目标会跳过；不补跑中断后未确认的项目，也不清理旧暂存或备份。'})
 _EN.update({'qt.transfer.history': 'Transfer journals', 'qt.transfer.history_hint': 'Local logs only; they do not prove current device state. No restore, cleanup, deletion or replay. Raw field names are diagnostic.', 'qt.transfer.history_state': 'Status', 'qt.transfer.history_folder': 'Song folder', 'qt.transfer.history_id': 'Transaction file', 'qt.transfer.history_refresh': 'Refresh local logs', 'qt.transfer.history_failed': 'Cannot read the journal directory. No device access or record changes.', 'qt.transfer.history_invalid': 'Unavailable record: format, identity or path validation failed.', 'qt.transfer.history_limited': 'Limited view: at most 100 JSON records from the first 1000 directory entries.', 'qt.transfer.history_review': 'Review / state unconfirmed', 'qt.transfer.history_backup': 'Committed, backup retained', 'qt.transfer.history_committed': 'Recorded as committed', 'qt.transfer.retry': 'Review failed songs', 'qt.transfer.retry_blocked': 'Device or directory state changed. Re-read the same device snapshot and confirm the local folder before retrying.', 'qt.transfer.retry_ready': 'Explicitly failed songs are ready for confirmation. Start again to retry. Existing targets are skipped; uncertain interrupted items are excluded and old staging/backups remain.'})
 
+_ZH.update({'qt.transfer.preflight_local':'本地估算：{size} · {files} 个文件\n不可读：{unreadable} · 不安全项：{unsafe}\n已有歌曲默认跳过，不覆盖。', 'qt.transfer.preflight_limited':'本地大小超出估算上限，传输前会重新校验。文件数：{files} · 不可读：{unreadable} · 不安全项：{unsafe}\n已有歌曲默认跳过，不覆盖。', 'qt.transfer.preflight_remote':'Quest → 本地：源文件大小将在读取时确认。\n已有歌曲默认跳过，不覆盖。', 'qt.transfer.result_done':'结果分类：已传输 {ok} · 已存在并跳过 {skipped} · 失败 {failed}\n传输完成后请重新读取 Quest。', 'qt.transfer.result_cancelled':'结果分类：已传输 {ok} · 已存在并跳过 {skipped} · 失败 {failed}\n其余项目未执行；如需继续，请重新确认。', 'qt.transfer.result_blocked':'结果分类：被安全护栏阻止\n原因：{error}', 'qt.transfer.reread_after_push':'传输结果已记录；请重新读取 Quest 后再进行下一次比较或补齐。'})
+_EN.update({'qt.transfer.preflight_local':'Local estimate: {size} · {files} files\nUnreadable: {unreadable} · Unsafe items: {unsafe}\nExisting songs are skipped by default and never overwritten.', 'qt.transfer.preflight_limited':'Local size exceeds the estimate limit; transfer will re-check it before starting. Files: {files} · Unreadable: {unreadable} · Unsafe: {unsafe}\nExisting songs are skipped by default and never overwritten.', 'qt.transfer.preflight_remote':'Quest → local: source size is confirmed while reading.\nExisting songs are skipped by default and never overwritten.', 'qt.transfer.result_done':'Result categories: copied {ok} · existing and skipped {skipped} · failed {failed}\nRead Quest again after the transfer.', 'qt.transfer.result_cancelled':'Result categories: copied {ok} · existing and skipped {skipped} · failed {failed}\nRemaining items were not run; confirm again to continue.', 'qt.transfer.result_blocked':'Result category: blocked by safety checks\nReason: {error}', 'qt.transfer.reread_after_push':'Transfer result recorded; read Quest again before comparing or filling missing songs.'})
+
 _ZH.update({"qt.transfer.history_hint":"本机日志仅供排查，远端现状未确认；不会自动恢复、清理或重放。", "qt.transfer.history_unavailable":"记录不可用"})
 _EN.update({"qt.transfer.history_hint":"Local logs only; device state is unconfirmed. No restore, cleanup or replay.", "qt.transfer.history_unavailable":"Unavailable record"})
 
@@ -1130,8 +1139,8 @@ _EN.update({'report.column.status': 'Status', 'report.column.folder': 'Folder', 
 
 
 # Quest read: invalid byte names never become replacement-character paths.
-_ZH['qt.device.state.partial'] = '已读取 {songs} 首；另有 {count} 个目录名称无法解码。快照不完整，已停用完整对比、报告及传输；设备文件未修改。'
-_EN['qt.device.state.partial'] = 'Read {songs} songs; {count} directory names could not be decoded. Snapshot incomplete: comparison, reports and transfers disabled. Device files unchanged.'
+_ZH['qt.device.state.partial'] = '已读取 {songs} 首；另有 {count} 个目录名称无法解码。快照不完整：对比、报告、补齐及写入停用；可单独导入正常选曲，设备文件未修改。'
+_EN['qt.device.state.partial'] = 'Read {songs} songs; {count} directory names could not be decoded. Snapshot incomplete: comparison, reports and writes disabled; readable selections can be imported. Device files unchanged.'
 
 # M8A2: snapshot report export.
 _ZH.update({'qt.library.local_select': '勾选本地可见歌曲', 'qt.library.local_clear': '清空本地选择'})
@@ -1155,7 +1164,7 @@ _ZH.update({
     'qt.help.menu':'打开当前歌曲的右键菜单', 'qt.help.clear':'清空当前曲库栏的全部勾选',
     'qt.help.selection_note':'“勾选本地可见歌曲”按钮会勾选当前搜索／筛选结果中的全部本地歌曲，与 Ctrl+A 的屏幕内范围不同。清空勾选不会删除歌曲。',
     'qt.help.search_note':'搜索框中的 Esc 用于清空搜索词；帮助窗口中的 Esc 用于关闭帮助。右键菜单还可单独复制歌曲标题。',
-    'qt.help.snapshot_note':'缺失对比需要两侧数据就绪；Quest 快照不完整时，缺失对比、报告和传输仍不可用。',
+    'qt.help.snapshot_note':'缺失对比和报告需要两侧数据就绪并完成歌曲版本核验；按谱面内容识别，目录名不同也能匹配。未知不视为缺失。Quest 快照不完整时，补齐和写入不可用；仍可勾选正常歌曲导入电脑。',
     'qt.help.select_button':'勾选当前搜索／筛选结果中的全部本地歌曲，保留已有勾选。',
     'qt.help.clear_button':'清空本地歌曲的全部勾选，不删除歌曲。',
     'qt.help.direction_tip':'切换缺失对比方向（Ctrl+1 / Ctrl+2），需要完整的两侧数据。',
@@ -1174,7 +1183,7 @@ _EN.update({
     'qt.help.menu':'Open the current song context menu', 'qt.help.clear':'Clear every check in the current song pane',
     'qt.help.selection_note':'The Check visible local songs button checks every local song in the current search/filter results, unlike the on-screen scope of Ctrl+A. Clearing checks does not delete songs.',
     'qt.help.search_note':'Esc clears text in the search box and closes this help window. The context menu can also copy a song title.',
-    'qt.help.snapshot_note':'Comparison requires both libraries. An incomplete Quest snapshot still disables missing-song comparison, reports and transfers.',
+    'qt.help.snapshot_note':'Comparison and reports require loaded libraries and verified map content. Folder names may differ; unknown is not missing. Incomplete Quest snapshots block missing-song actions and writes; checked readable songs can still be saved to PC.',
     'qt.help.select_button':'Check all local songs in the current search/filter results and keep existing checks.',
     'qt.help.clear_button':'Clear every local song check without deleting songs.',
     'qt.help.direction_tip':'Change comparison direction (Ctrl+1 / Ctrl+2). Complete data from both sides is required.',
@@ -1351,7 +1360,7 @@ _ZH.update({
  'qt.snapshot.old':'建议重新读取',
  'qt.snapshot.partial':'快照不完整',
  'qt.snapshot.notice':'读取 {time} · {age}\n{state}',
- 'qt.snapshot.hint':'读取完成：{time}。时长按单调时钟计算，约15分钟后建议重新读取。此快照不代表设备当前仍在线，不会持续监测设备或自动刷新。需要更新时请使用设备区的“{action}”；重新读取前会清除旧快照。不完整快照仍受原对比、报告及传输限制。',
+ 'qt.snapshot.hint':'读取完成：{time}。时长按单调时钟计算，约15分钟后建议重新读取。此快照不代表设备当前仍在线，不会持续监测设备或自动刷新。需要更新时请使用设备区的“{action}”；重新读取前会清除旧快照。快照不完整时，对比、报告、补齐和写入不可用；正常选曲可导入本地。',
 })
 _EN.update({
  'qt.snapshot.now_short':'now', 'qt.snapshot.minutes_short':'{count}m',
@@ -1362,7 +1371,7 @@ _EN.update({
  'qt.snapshot.old':'Refresh suggested',
  'qt.snapshot.partial':'Incomplete snapshot',
  'qt.snapshot.notice':'Read {time} · {age}\n{state}',
- 'qt.snapshot.hint':'Read completed: {time}. Elapsed time uses a monotonic clock; a new read is suggested after about 15 minutes. This snapshot does not confirm the device is still online. There is no continuous device monitoring or automatic refresh. Use “{action}” in the device area to update; starting a new read clears the old snapshot. Existing comparison, report and transfer restrictions still apply to incomplete snapshots.',
+ 'qt.snapshot.hint':'Read completed: {time}. Elapsed time uses a monotonic clock; a new read is suggested after about 15 minutes. This snapshot does not confirm the device is still online. There is no continuous device monitoring or automatic refresh. Use “{action}” in the device area to update; starting a new read clears the old snapshot. Incomplete snapshots block comparison, reports, missing-song actions and writes; readable selections can be imported locally.',
 })
 
 
@@ -1497,7 +1506,7 @@ _ZH.update({
  'qt.wireless.port':'连接端口', 'qt.wireless.pair_port':'配对端口', 'qt.wireless.code':'六位配对码',
  'qt.wireless.run.usb':'开启无线并连接', 'qt.wireless.run.connect':'连接 Quest', 'qt.wireless.run.pair':'配对并连接',
  'qt.wireless.cancel':'停止后续步骤', 'qt.wireless.close':'返回曲库', 'qt.wireless.transfers':'显示歌曲传输按钮（本次运行）',
- 'qt.wireless.transfer_hint':'连接成功后返回曲库，选择歌曲目录并读取。显示传输按钮后，可勾选歌曲向 Quest 传入或导出到本地；每次传输仍需确认来源、目录和数量。已有歌曲默认跳过，目录读取不完整时禁止传输。',
+ 'qt.wireless.transfer_hint':'连接成功后返回曲库，选择歌曲目录并读取。显示传输按钮后，可勾选歌曲向 Quest 传入或导出到本地；每次传输仍需确认来源、目录和数量。已有歌曲默认跳过；目录读取不完整时仅允许正常选曲导入本地，补齐及写入仍禁用。',
  'qt.wireless.wait':'请等待当前连接或歌曲传输操作结束。',
  'qt.wireless.state.wireless_input':'请选择连接方式。', 'qt.wireless.state.wireless_address':'请输入有效的设备 IPv4 地址；USB 模式可留空自动读取。',
  'qt.wireless.state.wireless_port':'端口必须是 1 至 65535 的整数。', 'qt.wireless.state.wireless_code':'请输入有效的六位配对码。',
@@ -1515,7 +1524,7 @@ _EN.update({
  'qt.wireless.port':'Connection port', 'qt.wireless.pair_port':'Pairing port', 'qt.wireless.code':'Six-digit pairing code',
  'qt.wireless.run.usb':'Enable Wi-Fi and connect', 'qt.wireless.run.connect':'Connect Quest', 'qt.wireless.run.pair':'Pair and connect',
  'qt.wireless.cancel':'Stop remaining steps', 'qt.wireless.close':'Return to library', 'qt.wireless.transfers':'Show song transfer buttons (this session)',
- 'qt.wireless.transfer_hint':'After connecting, return to the library, choose a song folder and read it. Enable the transfer buttons to send checked songs to Quest or import them locally. Each transfer still confirms source, folder and count. Existing songs are skipped by default; incomplete directory snapshots block transfers.',
+ 'qt.wireless.transfer_hint':'After connecting, return to the library, choose a song folder and read it. Enable the transfer buttons to send checked songs to Quest or import them locally. Each transfer still confirms source, folder and count. Existing songs are skipped. Incomplete snapshots allow only importing readable selections locally; missing-song actions and writes remain disabled.',
  'qt.wireless.wait':'Wait for the current connection or song transfer to finish.',
  'qt.wireless.state.wireless_input':'Choose a connection method.', 'qt.wireless.state.wireless_address':'Enter a valid device IPv4 address, or leave it blank for automatic USB detection.',
  'qt.wireless.state.wireless_port':'Port must be an integer from 1 to 65535.', 'qt.wireless.state.wireless_code':'Enter a valid six-digit pairing code.',
@@ -1558,3 +1567,459 @@ _EN.update({
  'qt.wireless.state.device_timeout':'Connection timed out. Keep the headset awake and check its network, then retry.',
  'qt.wireless.state.failed':'The operation did not complete. Check the connection and device authorization, then retry.',
 })
+
+_ZH.update({
+    'qt.playlists.open': '歌单列表',
+    'qt.playlists.title': '本地歌单列表',
+    'qt.playlists.song': '歌曲',
+    'qt.playlists.difficulty': '难度',
+    'qt.playlists.mapper': '谱师',
+    'qt.playlists.state': '本地状态',
+    'qt.playlists.key': 'BeatSaver 编号',
+    'qt.playlists.verified': '本地已核验',
+    'qt.playlists.unmatched': '尚未匹配',
+    'qt.playlists.unnamed': '未命名',
+    'qt.playlists.import': '导入歌单',
+    'qt.playlists.remove': '移出列表',
+    'qt.playlists.refresh': '重新匹配',
+    'qt.playlists.cancel': '停止匹配',
+    'qt.playlists.detail': '查看本地详情',
+    'qt.playlists.play': '试听本地歌曲',
+    'qt.playlists.download': '准备下载所选',
+    'qt.playlists.close': '返回曲库',
+    'qt.playlists.search': '搜索歌单内的歌曲、谱师或编号…',
+    'qt.playlists.songs': '歌单歌曲',
+    'qt.playlists.hint': '仅按谱面哈希核验；未匹配不等于未安装，结果是当前曲库的读取快照。缺少哈希不能核验，缺少编号不能准备下载。最多准备200个编号，进入下载页后请核对目录并点击开始。Quest 歌单读取待设备验证。',
+    'qt.playlists.files': 'Beat Saber 歌单 (*.bplist *.json)',
+    'qt.playlists.remove_confirm': '只移除此工具保存的歌单副本，不删除原歌单文件或歌曲。继续吗？',
+    'qt.playlists.replace_draft': '下载页已有链接草稿。是否用本次所选编号替换？不会自动开始下载。',
+    'qt.playlists.item': '{title} · {count} 首',
+    'qt.playlists.summary': '共 {count} 首 · 当前显示 {visible} 首 · 本地已核验 {matched} 首',
+    'qt.playlists.loading': '正在读取或保存歌单…',
+    'qt.playlists.matching': '正在核验本地谱面，请稍候…',
+    'qt.playlists.choose_root': '请先在主曲库选择并载入本地歌曲目录。',
+    'qt.playlists.empty': '还没有歌单，点击“导入歌单”选择本地 .bplist 或 JSON 文件。',
+    'qt.playlists.cancelled': '已停止匹配，原歌单和歌曲未改动。',
+    'qt.playlists.download_busy': '下载窗口仍在收尾，请稍后重新点击。',
+    'qt.playlists.limit': '超过歌单保存上限：最多20份、每份2000首，总文件16MiB。',
+    'qt.playlists.store_error': '歌单读取或保存失败。请检查格式和权限：UTF-8、每份不超过8MiB、字段和哈希有效；损坏或未来版本的存储不会被覆盖。原导入文件未改动。',
+    'qt.playlists.match_error': '本地核验失败，请确认目录仍可读取后重新匹配。',
+    'qt.playlists.partial': '仅完成部分核验（存在异常或达到读取上限）；其余保留尚未匹配。',
+    'qt.playlists.ready': '本地核验完成；查看或试听前会再次核对所选谱面。',
+})
+
+_EN.update({
+    'qt.playlists.open': 'Playlists',
+    'qt.playlists.title': 'Local playlists',
+    'qt.playlists.song': 'Song',
+    'qt.playlists.difficulty': 'Difficulty',
+    'qt.playlists.mapper': 'Mapper',
+    'qt.playlists.state': 'Local status',
+    'qt.playlists.key': 'BeatSaver ID',
+    'qt.playlists.verified': 'Verified locally',
+    'qt.playlists.unmatched': 'Not matched',
+    'qt.playlists.unnamed': 'Untitled',
+    'qt.playlists.import': 'Import playlist',
+    'qt.playlists.remove': 'Remove from list',
+    'qt.playlists.refresh': 'Match again',
+    'qt.playlists.cancel': 'Stop matching',
+    'qt.playlists.detail': 'Local details',
+    'qt.playlists.play': 'Preview local song',
+    'qt.playlists.download': 'Prepare selected downloads',
+    'qt.playlists.close': 'Back to library',
+    'qt.playlists.search': 'Search songs, mappers or IDs…',
+    'qt.playlists.songs': 'Playlist songs',
+    'qt.playlists.hint': 'Only exact chart hashes are verified. Unmatched does not mean absent; results are a library snapshot. Hashes are required to verify and IDs to prepare downloads. Up to 200 IDs are prepared; review the destination and click Start on the download page. Quest playlist reading awaits device validation.',
+    'qt.playlists.files': 'Beat Saber playlists (*.bplist *.json)',
+    'qt.playlists.remove_confirm': 'Remove only this tool’s saved playlist copy? Original playlist files and songs will remain.',
+    'qt.playlists.replace_draft': 'Replace the existing link draft with these selected IDs? Downloads will not start automatically.',
+    'qt.playlists.item': '{title} · {count} songs',
+    'qt.playlists.summary': '{count} songs · {visible} shown · {matched} verified locally',
+    'qt.playlists.loading': 'Reading or saving playlists…',
+    'qt.playlists.matching': 'Verifying local charts…',
+    'qt.playlists.choose_root': 'Choose and load a local song folder in the library first.',
+    'qt.playlists.empty': 'No playlists yet. Import a local .bplist or JSON file.',
+    'qt.playlists.cancelled': 'Matching stopped. Original playlists and songs are unchanged.',
+    'qt.playlists.download_busy': 'The download window is still closing. Try again shortly.',
+    'qt.playlists.limit': 'Playlist limit exceeded: 20 lists, 2000 songs each, 16 MiB total.',
+    'qt.playlists.store_error': 'Could not read or save playlists. Check permissions and format: UTF-8, at most 8 MiB per import, valid fields and hashes. Corrupt or future storage is never overwritten; source files are unchanged.',
+    'qt.playlists.match_error': 'Local verification failed. Check the folder and match again.',
+    'qt.playlists.partial': 'Verification is partial due to unreadable items or scan limits; remaining entries stay unmatched.',
+    'qt.playlists.ready': 'Local verification finished. Selected charts are checked again before opening or previewing.',
+})
+
+_ZH.update({'qt.playlists.selection_limit': '一次最多准备200个下载编号，请减少选择；没有截断或自动下载。'})
+_EN.update({'qt.playlists.selection_limit': 'Select at most 200 download IDs at a time. Nothing was truncated or downloaded.'})
+_ZH.update({'ui.library.detect_missing':'检测缺失'})
+_EN.update({'ui.library.detect_missing':'Check missing'})
+_ZH.update({'qt.wireless.connected_read':'Quest 无线已连接 · 点击“读取快照”加载歌曲'})
+_EN.update({'qt.wireless.connected_read':'Quest wireless connected · Read a snapshot to load songs'})
+
+_ZH.update({'layout.import': '链接 / 歌单 / ZIP', 'qt.import.hint': '粘贴歌曲链接或编号，每行一首；整份歌单可粘贴一个歌单网址后点击开始，或点击“整份歌单下载”选择文件。先预览再确认，ZIP沿用原校验与查重。'})
+
+_ZH.update({
+    'qt.catalog.title': '发现歌单', 'qt.catalog.detail_title': '歌单详情', 'qt.catalog.featured': '精选歌单', 'qt.catalog.banner': '发现歌单 · 浏览精选与主题合集',
+    'qt.catalog.back_short': '返回歌单', 'qt.catalog.check_short': '选择本页', 'qt.catalog.clear_short': '清空选择', 'qt.catalog.preview_short': '试听',
+    'ui.playlist.short.import': '导入', 'ui.playlist.short.remove': '移除', 'ui.playlist.short.send': '发送到 Quest',
+    'ui.playlist.short.save': '保存到本地', 'ui.playlist.short.read': '读取 Quest', 'ui.playlist.short.export': '导出',
+    'qt.catalog.songs_label': '歌曲数量', 'qt.catalog.rating_label': '好评率', 'qt.catalog.updated_label': '最后更新', 'qt.catalog.songs_count': '{count} 首',
+    'qt.catalog.selection_summary': '已选择 {count} 首歌曲 · 共 {total} 首', 'qt.app.brand': 'Quest 歌曲工具',
+    'qt.catalog.back': '← 返回歌单列表', 'qt.catalog.import': '链接 / 文件导入',
+    'qt.catalog.stop': '停止加载', 'qt.catalog.search': '搜索歌单', 'qt.catalog.query': '搜索歌单名称或关键词…',
+    'qt.catalog.previous': '上一页', 'qt.catalog.next': '下一页', 'qt.catalog.refresh': '刷新',
+    'qt.catalog.check_page': '勾选本页', 'qt.catalog.clear': '清空勾选', 'qt.catalog.preview': '试听选中歌曲',
+    'qt.catalog.selected': '下载所选 ({count})', 'qt.catalog.all': '下载整份歌单',
+    'qt.catalog.order.Curated': '精选歌单', 'qt.catalog.order.Latest': '最新歌单',
+    'qt.catalog.order.Rating': '高评分歌单', 'qt.catalog.order.Relevance': '搜索相关度',
+    'qt.catalog.cover': '歌单封面', 'qt.catalog.count': '{count} 首歌曲',
+    'qt.catalog.dynamic': '动态歌单', 'qt.catalog.count_pending': '数量待计算',
+    'qt.catalog.card_stats_pending': '数量待计算 · 好评 {rating}',
+    'qt.catalog.page_selection': '已选择 {count} 首 · 本页 {shown} 首', 'qt.catalog.total_count': '共 {count} 首',
+    'qt.catalog.dynamic_hint': '动态歌单按当前条件生成，刷新后歌曲可能变化；保存到本地为当次获取的固定清单。',
+    'qt.catalog.card_stats': '{count} 首 · 好评 {rating}', 'qt.catalog.rating': '好评率',
+    'qt.catalog.unavailable': '歌曲资料不可用', 'qt.catalog.page': '第 {page} 页',
+    'qt.catalog.meta': '{author} · {count} 首 · 约 {minutes} 分钟 · 好评 {rating}\n更新：{date}',
+    'qt.catalog.meta_rows': '♫  歌曲数量  {count} 首\n☆  评分  {rating}\n▣  最后更新  {date}', 'qt.catalog.unknown_author': '未知作者',
+    'qt.catalog.detail_hint': '按编号下载当前发布版本；每批最多200首。整份按钮仅在清单完整且未超限时可用；勾选跨详情页保留，返回列表后清空。',
+    'qt.catalog.hint': '打开此页后加载歌单；点击封面查看歌曲详情。',
+    'qt.catalog.loading': '正在加载，请稍候…', 'qt.catalog.ready': '已就绪',
+    'qt.catalog.cancelled': '加载已停止；已显示内容为上次快照，可刷新重试。',
+    'qt.catalog.failed': '加载失败，可点击刷新重试。', 'qt.catalog.limit': '所选超过200首，请减少勾选；未自动截断。',
+    'qt.catalog.results': '本页 {count} 项 · 点击查看或选择操作', 'qt.catalog.empty': '没有找到结果，可更换关键词或返回上一页。',
+    'qt.catalog.unavailable_count': '已跳过 {count} 条格式异常的歌单记录',
+})
+_EN.update({
+    'qt.catalog.title': 'Discover playlists', 'qt.catalog.detail_title': 'Playlist details', 'qt.catalog.featured': 'Featured playlist', 'qt.catalog.banner': 'Discover playlists · Curated collections',
+    'qt.catalog.back_short': 'Back', 'qt.catalog.check_short': 'Select page', 'qt.catalog.clear_short': 'Clear selection', 'qt.catalog.preview_short': 'Preview',
+    'ui.playlist.short.import': 'Import', 'ui.playlist.short.remove': 'Remove', 'ui.playlist.short.send': 'Send to Quest',
+    'ui.playlist.short.save': 'Save locally', 'ui.playlist.short.read': 'Read Quest', 'ui.playlist.short.export': 'Export',
+    'qt.catalog.songs_label': 'Songs', 'qt.catalog.rating_label': 'Approval', 'qt.catalog.updated_label': 'Updated', 'qt.catalog.songs_count': '{count} songs',
+    'qt.catalog.selection_summary': '{count} selected · {total} songs', 'qt.app.brand': 'Quest Song Tool',
+    'qt.catalog.back': '← Back to playlists', 'qt.catalog.import': 'Link / file import',
+    'qt.catalog.stop': 'Stop loading', 'qt.catalog.search': 'Search playlists', 'qt.catalog.query': 'Search playlist names or keywords…',
+    'qt.catalog.previous': 'Previous', 'qt.catalog.next': 'Next', 'qt.catalog.refresh': 'Refresh',
+    'qt.catalog.check_page': 'Check this page', 'qt.catalog.clear': 'Clear checks', 'qt.catalog.preview': 'Preview song',
+    'qt.catalog.selected': 'Download selected ({count})', 'qt.catalog.all': 'Download playlist',
+    'qt.catalog.order.Curated': 'Curated playlists', 'qt.catalog.order.Latest': 'Latest playlists',
+    'qt.catalog.order.Rating': 'Top rated playlists', 'qt.catalog.order.Relevance': 'Search relevance',
+    'qt.catalog.cover': 'Playlist cover', 'qt.catalog.count': '{count} songs',
+    'qt.catalog.dynamic': 'Dynamic playlist', 'qt.catalog.count_pending': 'Count pending',
+    'qt.catalog.card_stats_pending': 'Count pending · Rating {rating}',
+    'qt.catalog.page_selection': '{count} selected · {shown} on this page', 'qt.catalog.total_count': '{count} songs total',
+    'qt.catalog.dynamic_hint': 'Dynamic results can change on refresh. Saving locally stores the list fetched at that time.',
+    'qt.catalog.card_stats': '{count} songs · Rating {rating}', 'qt.catalog.rating': 'Rating',
+    'qt.catalog.unavailable': 'Song metadata unavailable', 'qt.catalog.page': 'Page {page}',
+    'qt.catalog.meta': '{author} · {count} songs · About {minutes} min · Rating {rating}\nUpdated: {date}',
+    'qt.catalog.meta_rows': '♫  Songs  {count}\n☆  Rating  {rating}\n▣  Updated  {date}', 'qt.catalog.unknown_author': 'Unknown author',
+    'qt.catalog.detail_hint': 'IDs download the current published version, up to 200 per batch. Whole-playlist download requires a complete list within the limit. Checks persist across detail pages and clear on returning to the list.',
+    'qt.catalog.hint': 'Open this page to load playlists; click a cover to view its songs.',
+    'qt.catalog.loading': 'Loading…', 'qt.catalog.ready': 'Ready',
+    'qt.catalog.cancelled': 'Loading stopped. Existing content is a snapshot; refresh to retry.',
+    'qt.catalog.failed': 'Could not load. Refresh to retry.', 'qt.catalog.limit': 'Selection exceeds 200 songs. Reduce checks; nothing was truncated.',
+    'qt.catalog.results': '{count} items on this page · Open or select an action', 'qt.catalog.empty': 'No results. Try another query or the previous page.',
+    'qt.catalog.unavailable_count': '{count} invalid playlist records were skipped',
+})
+_EN.update({'layout.import': 'Links / Playlists / ZIP', 'qt.import.hint': 'Paste map links or IDs, one per line. For a whole playlist, paste one playlist URL and click Start, or choose Download playlist to open a file. Review before confirming; ZIP validation and duplicate checks are unchanged.'})
+
+_ZH.update({
+    'qt.playlist_dl.title': '整份歌单下载',
+    'qt.playlist_dl.read': '读取歌单链接',
+    'qt.playlist_dl.file': '选择歌单文件',
+    'qt.playlist_dl.website': '浏览网站歌单',
+    'qt.playlist_dl.stop': '停止读取',
+    'qt.playlist_dl.start': '下载整份歌单',
+    'qt.playlist_dl.back': '返回',
+    'qt.playlist_dl.hint': '先读取网站歌单链接或本地 .bplist / JSON，核对后整批下载到当前保存位置。按编号下载当前已发布版本，可能与歌单记录的旧版本不同；已有同版本跳过，继续沿用原下载和解压保护。不会自动访问文件内的同步地址。',
+    'qt.playlist_dl.loading': '正在读取歌单，请稍候…',
+    'qt.playlist_dl.ready': '歌单已就绪。',
+    'qt.playlist_dl.cancelled': '已停止读取，未加入下载队列。',
+    'qt.playlist_dl.failed': '无法读取歌单。请检查文件格式、大小，或输入完整的 BeatSaver 歌单链接。',
+    'qt.playlist_dl.summary': '共 {count} 首 · {unique} 个不同下载编号 · {missing} 首缺少编号',
+    'qt.playlist_dl.limit': '本次无法整批下载：歌单不能为空，所有歌曲须有有效编号，每批最多200个不同编号。未截断，也未下载部分歌曲。',
+    'qt.playlist_dl.confirm': '将 {count} 首歌曲加入原下载队列？\n保存位置：{path}\n按编号获取当前已发布版本，可能不同于歌单旧版本；已有同版本跳过。',
+})
+_EN.update({
+    'qt.playlist_dl.title': 'Download playlist',
+    'qt.playlist_dl.read': 'Read playlist link',
+    'qt.playlist_dl.file': 'Choose playlist file',
+    'qt.playlist_dl.website': 'Browse playlists online',
+    'qt.playlist_dl.stop': 'Stop reading',
+    'qt.playlist_dl.start': 'Download whole playlist',
+    'qt.playlist_dl.back': 'Back',
+    'qt.playlist_dl.hint': 'Read a BeatSaver playlist link or local .bplist / JSON first, then review and download to the current destination. IDs resolve to the current published version, which may differ from the playlist version. Existing identical versions are skipped using the original download and extraction protections. Embedded sync URLs are never followed automatically.',
+    'qt.playlist_dl.loading': 'Reading playlist…',
+    'qt.playlist_dl.ready': 'Playlist ready.',
+    'qt.playlist_dl.cancelled': 'Reading stopped. Nothing was queued.',
+    'qt.playlist_dl.failed': 'Could not read playlist. Check its format and size, or enter a full BeatSaver playlist link.',
+    'qt.playlist_dl.summary': '{count} songs · {unique} unique download IDs · {missing} missing IDs',
+    'qt.playlist_dl.limit': 'Cannot download the whole list: it must be nonempty, every song needs an ID, and batches allow at most 200 unique IDs. Nothing was truncated or partially downloaded.',
+    'qt.playlist_dl.confirm': 'Queue {count} songs?\nDestination: {path}\nIDs resolve to the current published version, which may differ from the playlist version. Existing identical versions are skipped.',
+})
+
+_ZH.update({'ux.enable_transfers': '本次启用传输', 'ux.read_connected': '连接成功，读取歌曲', 'ux.stale': '显示上次结果；更新成功前不能据此传输', 'ux.wait_task': '请等待当前任务结束或关闭确认窗口', 'ux.choose_local': '请先选择并载入电脑歌曲目录', 'ux.wait_device': '正在连接或读取设备，请稍候', 'ux.read_first': '请先选择 Quest 目录并读取歌曲', 'ux.select_first': '请先勾选需要处理的正常歌曲', 'ux.view.compare': '对比模式', 'ux.view.local': '我的本地歌曲', 'ux.view.quest': 'Quest 歌曲', 'ux.tasks': '任务中心', 'ux.view_local': '查看本地歌曲', 'ux.open_folder': '打开文件夹', 'ux.task_note': '集中查看本次下载与传输。查看结果不会自动开始下一项操作。', 'ux.no_tasks': '本次尚无任务。下载或传输后，结果会显示在这里。', 'ux.task_type': '任务', 'ux.task_state': '状态', 'ux.task_count': '歌曲 / 数量', 'ux.task_target': '目标位置', 'ux.download_tasks': '下载任务', 'ux.transfer_details': '传输详情', 'ux.verify': '核验歌曲版本', 'ux.cancel_verify': '停止核验', 'ux.verify_progress': '正在核验：已确认 {count} 首；未知不视为缺失', 'ux.verify_status': '已核验 {count} 首；按内容识别同版本', 'ux.verify_needed': '先核验歌曲版本，再判断缺失；正常选曲仍可直接保存到电脑。', 'ux.identity_same': '同谱面版本（已核验）', 'ux.identity_different': '同名目录内容不同，请勿当成同版本', 'ux.identity_unknown': '版本未核验', 'ux.quest_preview': 'Quest 歌曲需先保存到电脑后试听'})
+_EN.update({'ux.enable_transfers': 'Enable transfers this session', 'ux.read_connected': 'Connected: read songs', 'ux.stale': 'Showing previous results; transfers await a successful refresh', 'ux.wait_task': 'Wait for the current task or close its confirmation dialog', 'ux.choose_local': 'Choose and load a PC song folder first', 'ux.wait_device': 'Device connection or reading is in progress', 'ux.read_first': 'Choose a Quest folder and read its songs first', 'ux.select_first': 'Check readable songs first', 'ux.view.compare': 'Compare libraries', 'ux.view.local': 'My local songs', 'ux.view.quest': 'Quest songs', 'ux.tasks': 'Task center', 'ux.view_local': 'View local songs', 'ux.open_folder': 'Open folder', 'ux.task_note': 'Downloads and transfers from this session. Viewing a result never starts another operation.', 'ux.no_tasks': 'No tasks this session. Downloads and transfers will appear here.', 'ux.task_type': 'Task', 'ux.task_state': 'State', 'ux.task_count': 'Song / count', 'ux.task_target': 'Destination', 'ux.download_tasks': 'Download tasks', 'ux.transfer_details': 'Transfer details', 'ux.verify': 'Verify song versions', 'ux.cancel_verify': 'Stop verification', 'ux.verify_progress': 'Verifying: {count} confirmed; unknown is not missing', 'ux.verify_status': '{count} verified; compare map content', 'ux.verify_needed': 'Verify song versions to identify missing content. Checked songs can still be saved to PC.', 'ux.identity_same': 'Same map version (verified)', 'ux.identity_different': 'Same folder name, different content', 'ux.identity_unknown': 'Version not verified', 'ux.quest_preview': 'Save this Quest song to PC before previewing'})
+
+_ZH.update({'ux.report_verify':'报告：请先核验歌曲版本'})
+_EN.update({'ux.report_verify':'Report: verify song versions first'})
+
+_ZH.update({'ux.continue_verify':'继续核验未完成歌曲'})
+_EN.update({'ux.continue_verify':'Continue verification'})
+
+_ZH.update({'ux.transfer_entry_hint':'歌曲传输：电脑与 Quest。启用后可选择歌曲、查看方向并确认传输；不会自动连接或复制。', 'ux.transfer_entry_enable':'启用歌曲传输'})
+_EN.update({'ux.transfer_entry_hint':'Song transfers between PC and Quest. Enable, select songs, then confirm. No automatic connection or copying.', 'ux.transfer_entry_enable':'Enable song transfers'})
+
+_ZH.update({
+    'songs.delete.action': '删除歌曲…', 'songs.delete.title': '删除歌曲', 'songs.delete.confirm': '确认删除',
+    'songs.delete.local': '删除选中的 {count} 首本地歌曲？\n位置：{path}\n整首歌曲文件夹将移入 Windows 回收站，可从回收站恢复。\n回车确认，Esc 取消；展开详情可查看全部文件夹。',
+    'songs.delete.quest': '从 Quest 曲库删除选中的 {count} 首歌曲？\n位置：{path}\n歌曲将移到此目录的隐藏隔离区，不会永久擦除；电脑保存恢复记录。歌单文件不变，游戏内需重读歌曲。\n回车确认，Esc 取消；展开详情可查看全部文件夹。',
+    'songs.delete.working': '正在移除歌曲，请稍候…',
+    'songs.delete.result': '歌曲移除完成：成功 {done} 首，失败 {failed} 首；失败项仍需检查。',
+    'dl.error.delete_changed': '歌曲或目标位置已变化，请刷新列表后重新选择。',
+    'dl.error.delete_failed': '未能移除歌曲，请检查占用、权限或回收站状态；不会自动永久删除。',
+    'dl.error.search_response': '搜索接口返回了无法识别的内容，请刷新重试；这不表示歌曲没有已发布版本。',
+    'dl.error.playlist_device_root': '未找到可用的 Quest PlaylistManager/Playlists 目录。请确认头显已解锁并安装相应歌单模组；不会自动创建其他目录。',
+    'dl.error.playlist_target_exists': 'Quest 已有同名但内容不同的歌单，已停止，未覆盖。',
+    'playlists.source.local': '本地歌单', 'playlists.source.quest': 'Quest 3 歌单',
+    'qt.playlists.title': '歌单管理',
+    'playlists.device.read': '读取 Quest 歌单', 'playlists.device.send': '发送歌单到 Quest',
+    'playlists.device.save': '保存到本地歌单', 'playlists.device.export': '导出 .bplist',
+    'playlists.device.overwrite': '文件已存在，是否覆盖？\n{path}',
+    'playlists.device.confirm': '将歌单「{title}」发送到 Quest？\n目录：{path}\n仅传送歌单文件，不包含音频和谱面；缺失歌曲仍需下载并传输。相同文件跳过，其他文件不覆盖。完成后需在游戏中刷新歌单或重启游戏。',
+    'qt.playlists.device_hint': '先在主窗口选择已连接的 Quest，再点击“读取 Quest 歌单”。',
+    'qt.playlists.device_working': '正在处理歌单文件…', 'qt.playlists.device_error': '歌单文件处理失败，未自动重试。',
+    'qt.playlists.device_ready': 'Quest 歌单已读取；可查看曲目、另存到本地或导出文件。',
+    'qt.playlists.device_partial': '已读取有效歌单，部分文件格式不兼容；未修改设备文件。',
+    'qt.playlists.device_saved': '已保存到本地歌单。', 'qt.playlists.device_sent': '歌单已发送到 Quest；请在游戏中刷新歌单，歌曲需另行传输。',
+    'qt.playlists.device_exported': '.bplist 文件已导出。',
+    'qt.catalog.save': '保存到本地歌单', 'qt.catalog.saving': '正在保存歌单文件…',
+    'qt.catalog.saved': '歌单文件已保存在本地；可从“曲库 / 传输 → 歌单列表”查看、导出或发送到 Quest。',
+    'search.placeholder': '输入歌名、歌手或谱师；也可粘贴歌曲链接或输入 #编号',
+})
+_EN.update({
+    'songs.delete.action': 'Delete songs…', 'songs.delete.title': 'Delete songs', 'songs.delete.confirm': 'Confirm delete',
+    'songs.delete.local': 'Delete {count} selected local songs?\nFolder: {path}\nWhole song folders move to the Windows Recycle Bin and can be restored there.\nEnter confirms; Esc cancels. Expand details to review every folder.',
+    'songs.delete.quest': 'Remove {count} selected songs from Quest?\nFolder: {path}\nFolders move to a hidden quarantine here; a recovery record is saved on PC. Playlist files are retained. Reload songs in game.\nEnter confirms; Esc cancels. Expand details to review every folder.',
+    'songs.delete.working': 'Removing songs…',
+    'songs.delete.result': 'Song removal: {done} succeeded, {failed} failed. Check any failures.',
+    'dl.error.delete_changed': 'Songs or destination changed. Refresh and select again.',
+    'dl.error.delete_failed': 'Could not remove songs. Check open files, permissions or Recycle Bin availability. No permanent-delete fallback.',
+    'dl.error.search_response': 'The search service returned an unreadable response. Refresh to retry; this does not mean no published version exists.',
+    'dl.error.playlist_device_root': 'No usable Quest PlaylistManager/Playlists directory. Unlock the headset and check its playlist mod. No alternative directory was created.',
+    'dl.error.playlist_target_exists': 'A different Quest playlist already uses this filename. Nothing was overwritten.',
+    'playlists.source.local': 'Local playlists', 'playlists.source.quest': 'Quest 3 playlists',
+    'qt.playlists.title': 'Playlist library',
+    'playlists.device.read': 'Read Quest playlists', 'playlists.device.send': 'Send playlist to Quest',
+    'playlists.device.save': 'Save to local playlists', 'playlists.device.export': 'Export .bplist',
+    'playlists.device.overwrite': 'Replace the existing file?\n{path}',
+    'playlists.device.confirm': 'Send playlist “{title}” to Quest?\nFolder: {path}\nOnly the playlist file is copied, without audio or maps. Download and transfer missing songs separately. Identical files are skipped; other files are not overwritten. Refresh playlists in game or restart afterwards.',
+    'qt.playlists.device_hint': 'Select a connected Quest in the main window, then click Read Quest playlists.',
+    'qt.playlists.device_working': 'Processing playlist file…', 'qt.playlists.device_error': 'Playlist file action failed; no automatic retry.',
+    'qt.playlists.device_ready': 'Quest playlists loaded. Browse songs, save locally or export.',
+    'qt.playlists.device_partial': 'Valid playlists loaded; some files were incompatible. Device files were not changed.',
+    'qt.playlists.device_saved': 'Saved to local playlists.', 'qt.playlists.device_sent': 'Playlist sent to Quest. Refresh it in game; transfer songs separately.',
+    'qt.playlists.device_exported': '.bplist exported.',
+    'qt.catalog.save': 'Save to local playlists', 'qt.catalog.saving': 'Saving playlist file…',
+    'qt.catalog.saved': 'Playlist saved locally. Open Library / Transfer → Playlists to browse, export or send it to Quest.',
+    'search.placeholder': 'Song, artist or mapper; also accepts map links or #ID',
+})
+
+
+_ZH.update({'design.library': '曲库 / 传输', 'design.source': '来源：BeatSaver', 'design.destination': '保存位置', 'design.more': '完整谱面资料', 'design.preview_length': '30 秒试听', 'design.previous_song': '试听上一首', 'design.next_song': '试听下一首', 'design.meta.mapper': '谱师', 'design.meta.duration': '时长', 'design.meta.bpm': 'BPM', 'design.meta.rating': '好评率', 'design.meta.id': '编号', 'design.meta.published': '发布日期'})
+_EN.update({'design.library': 'Library / Transfer', 'design.source': 'Source: BeatSaver', 'design.destination': 'Save to', 'design.more': 'Full map details', 'design.preview_length': '30 sec preview', 'design.previous_song': 'Preview previous song', 'design.next_song': 'Preview next song', 'design.meta.mapper': 'Mapper', 'design.meta.duration': 'Duration', 'design.meta.bpm': 'BPM', 'design.meta.rating': 'Rating', 'design.meta.id': 'Map ID', 'design.meta.published': 'Published'})
+
+_ZH.update({'design.columns':'{count} 列','design.rows':'{count} 行 / 页'})
+_EN.update({'design.columns':'{count} cols','design.rows':'{count} rows'})
+
+_ZH.update({'qt.dl.title':'Quest 歌曲工具 · 下载歌曲'})
+_EN.update({'qt.dl.title':'Quest Songs · Download songs'})
+
+_ZH.update({
+ 'qt.wireless.title':'设备管理', 'qt.wireless.open':'设备管理',
+ 'qt.wireless.tab.usb':'USB 转无线','qt.wireless.tab.connect':'已有设备','qt.wireless.tab.pair':'配对码连接',
+ 'qt.wireless.intro':'电脑与 Quest 接入同一局域网，保持头显唤醒并解锁。打开本窗口不会自动更改连接。',
+ 'qt.wireless.hint.connect':'点击“发现设备”获取无线地址，或手动填写。发现的广播需在连接后核验为 Quest；USB 转无线通常使用 5555。',
+ 'qt.wireless.hint.pair':'仅用于头显支持无线配对的情况。填写配对端口与六位码；连接端口可留空自动发现。已配对后可补填连接端口继续连接。',
+ 'qt.wireless.discover':'发现设备','qt.wireless.diagnose':'连接诊断','qt.wireless.found':'发现的设备',
+ 'qt.wireless.pick_discovered':'选择发现的地址',
+ 'qt.wireless.auto_port':'留空自动发现','qt.wireless.auto_port_label':'连接端口（可自动发现）',
+ 'qt.wireless.continue_connect':'继续连接（已配对）',
+ 'qt.wireless.read_short':'读取曲库','qt.wireless.stop_short':'停止','qt.wireless.back_short':'返回曲库',
+ 'qt.wireless.kind.legacy':'经典无线 · 待核验','qt.wireless.kind.connect':'无线调试 · 待核验',
+ 'qt.wireless.kind.pairing':'配对服务 · 待核验','qt.wireless.kind.connected':'已连接的 Quest',
+ 'qt.wireless.diagnostic':'ADB：{version}\n自动发现：{mdns}',
+ 'qt.wireless.state.ready':'选择连接方式，完成连接后即可读取曲库。',
+ 'qt.wireless.state.discovering':'正在发现无线广播与已连接的 Quest…',
+ 'qt.wireless.state.discovered':'找到 {count} 个无线地址。选择后点击连接，广播名称不代表身份已核验。',
+ 'qt.wireless.state.diagnosing':'正在检查 ADB 版本与自动发现能力…',
+ 'qt.wireless.state.diagnosed':'连接诊断完成。可以继续连接或手动填写地址。',
+ 'qt.wireless.state.mdns_ready':'mDNS 查询可用；未发现地址时可手动填写。',
+ 'qt.wireless.state.mdns_unavailable':'当前无法自动发现。请手动填写头显当前 IP 和连接端口，或使用 USB 转无线。',
+ 'qt.wireless.state.checking_usb':'正在确认 USB Quest 的身份…',
+ 'qt.wireless.state.reading_ip':'正在读取 Quest 的 Wi-Fi 地址…',
+ 'qt.wireless.state.enabling':'正在通过 USB 开启无线调试，请保持数据线连接…',
+ 'qt.wireless.state.pairing':'正在使用配对码配对…',
+ 'qt.wireless.state.finding_port':'已配对，正在寻找连接端口…',
+ 'qt.wireless.state.connecting':'正在建立无线连接，请保持头显唤醒…',
+ 'qt.wireless.state.verifying':'连接已建立，正在核验 Quest 身份…',
+ 'qt.wireless.state.paired_wait':'已配对，尚未连接。填写连接端口后点击“继续连接”，无需再次输入配对码。',
+ 'qt.wireless.state.port_ambiguous':'发现多个连接端口，请在头显上确认端口后填写。',
+ 'qt.wireless.state.device_unauthorized':'设备未授权。请在头显内允许调试后重试。',
+ 'qt.wireless.state.device_offline':'设备当前离线。请唤醒头显并检查网络。',
+})
+_EN.update({
+ 'qt.wireless.title':'Device manager','qt.wireless.open':'Devices',
+ 'qt.wireless.tab.usb':'USB to Wi-Fi','qt.wireless.tab.connect':'Known devices','qt.wireless.tab.pair':'Pairing code',
+ 'qt.wireless.intro':'Keep the computer and Quest on the same LAN, and the headset awake and unlocked. Opening this window does not change connections.',
+ 'qt.wireless.hint.connect':'Discover wireless addresses or enter one manually. Discovered services are verified as Quest after connection. USB to Wi-Fi usually uses port 5555.',
+ 'qt.wireless.hint.pair':'Requires headset support. Enter its pairing port and six-digit code. Leave the connection port empty to discover it. After pairing, enter a port to continue without pairing again.',
+ 'qt.wireless.discover':'Discover','qt.wireless.diagnose':'Diagnostics','qt.wireless.found':'Discovered devices',
+ 'qt.wireless.pick_discovered':'Select a discovered address',
+ 'qt.wireless.auto_port':'Auto-discover if empty','qt.wireless.auto_port_label':'Connection port (optional)',
+ 'qt.wireless.continue_connect':'Continue connection (paired)',
+ 'qt.wireless.read_short':'Read library','qt.wireless.stop_short':'Stop','qt.wireless.back_short':'Back to library',
+ 'qt.wireless.kind.legacy':'Legacy Wi-Fi · unverified','qt.wireless.kind.connect':'Wireless debugging · unverified',
+ 'qt.wireless.kind.pairing':'Pairing service · unverified','qt.wireless.kind.connected':'Connected Quest',
+ 'qt.wireless.diagnostic':'ADB: {version}\nDiscovery: {mdns}',
+ 'qt.wireless.state.ready':'Choose a connection method, then read the song library after connecting.',
+ 'qt.wireless.state.discovering':'Discovering wireless services and connected Quest devices…',
+ 'qt.wireless.state.discovered':'Found {count} addresses. Select one and connect to verify its identity.',
+ 'qt.wireless.state.diagnosing':'Checking ADB version and discovery support…',
+ 'qt.wireless.state.diagnosed':'Diagnostics complete. Connect or enter an address manually.',
+ 'qt.wireless.state.mdns_ready':'mDNS query available; enter an address manually if none is found.',
+ 'qt.wireless.state.mdns_unavailable':'Discovery is unavailable. Enter the headset IP and connection port, or use USB to Wi-Fi.',
+ 'qt.wireless.state.checking_usb':'Verifying the USB Quest identity…',
+ 'qt.wireless.state.reading_ip':'Reading the Quest Wi-Fi address…',
+ 'qt.wireless.state.enabling':'Enabling wireless debugging over USB. Keep the cable connected…',
+ 'qt.wireless.state.pairing':'Pairing with the supplied code…',
+ 'qt.wireless.state.finding_port':'Paired; looking for the connection port…',
+ 'qt.wireless.state.connecting':'Connecting wirelessly. Keep the headset awake…',
+ 'qt.wireless.state.verifying':'Connection established; verifying Quest identity…',
+ 'qt.wireless.state.paired_wait':'Paired but not connected. Enter the connection port, then Continue connection; no pairing code is needed again.',
+ 'qt.wireless.state.port_ambiguous':'Multiple connection ports found. Check the port on the headset and enter it.',
+ 'qt.wireless.state.device_unauthorized':'Device not authorized. Allow debugging inside the headset and retry.',
+ 'qt.wireless.state.device_offline':'Device offline. Wake the headset and check its network.',
+})
+
+_ZH.update({'ui.library_heading': 'Quest 歌曲工具', 'ui.playlist_help': '匹配与下载说明'})
+_EN.update({'ui.library_heading': 'Quest Songs', 'ui.playlist_help': 'Matching notes'})
+
+_ZH.update({
+    'ui.library.quest_missing': 'Quest 缺失',
+    'ui.library.local_count': '{visible} / {count} 首\n已选 {selected} 首',
+    'ui.library.missing_count': '{count} 首待补齐',
+    'ui.library.snapshot_count': '{count} 首 · 只读快照',
+    'ui.library.check_all': '全选', 'ui.library.uncheck_all': '取消全选',
+    'ui.library.visible_checks': '当前搜索结果 {visible} 首 · 此列表已选 {selected} 首；仅切换当前搜索结果的勾选',
+    'ui.library.check_needed': '按歌曲内容检查，找出 Quest 尚未安装的歌曲。',
+    'ui.library.check_missing': '检查缺失', 'ui.library.check_continue': '继续检查',
+    'ui.library.push': '传输到 Quest ({count})', 'ui.library.push_missing': '补齐缺失 ({count})',
+    'ui.library.history': '传输记录',
+    'ui.library.push_hint': '确认后传输 · 已有歌曲默认跳过 · 完成后请手动重读 Quest',
+})
+_EN.update({
+    'ui.library.quest_missing': 'Missing on Quest',
+    'ui.library.local_count': '{visible} / {count} songs\n{selected} checked',
+    'ui.library.missing_count': '{count} missing songs',
+    'ui.library.snapshot_count': '{count} songs',
+    'ui.library.check_all': 'Select all', 'ui.library.uncheck_all': 'Deselect all',
+    'ui.library.visible_checks': '{visible} search results · {selected} checked in this list; toggle only the current results',
+    'ui.library.check_needed': 'Compare song content to find songs not yet installed on Quest.',
+    'ui.library.check_missing': 'Check missing', 'ui.library.check_continue': 'Continue check',
+    'ui.library.push': 'Send to Quest ({count})', 'ui.library.push_missing': 'Add missing ({count})',
+    'ui.library.history': 'Transfer history',
+    'ui.library.push_hint': 'Confirm before transfer · Existing songs skipped by default · Reload Quest afterwards',
+})
+
+_ZH.update({
+    'qt.wireless.recent':'最近连接', 'qt.wireless.manual':'手动输入新地址',
+    'qt.wireless.forget':'移除记录', 'qt.wireless.reconnect':'重新连接',
+    'qt.wireless.recent_hint':'记录仅保存地址与头显身份，不代表在线。重连后会重新核验身份；不保存配对码。',
+    'qt.wireless.history_error':'最近连接记录无法读取或保存，原文件已保留；仍可手动连接。',
+    'qt.wireless.reload_hint':'旧曲库需重新读取；重连不会自动传输歌曲。',
+    'qt.wireless.recovery.offline':'无线设备离线，请唤醒头显并检查网络',
+    'qt.wireless.recovery.disconnected':'无线连接已断开',
+    'qt.wireless.recovery.unauthorized':'无线连接未获授权，请在头显中允许调试',
+    'qt.wireless.recovery.rejected':'头显身份不匹配，请检查地址与设备',
+})
+_ZH.update({
+    'ui.library.inline_count':'{visible} / {count} 首　已选 {selected} 首',
+    'ui.window.minimize':'最小化', 'ui.window.maximize':'最大化',
+    'ui.window.restore':'还原窗口', 'ui.window.close':'关闭',
+})
+_ZH.update({'qt.player.pause':'暂停播放','qt.logs.open':'日志'})
+_EN.update({'qt.player.pause':'Pause playback','qt.logs.open':'Logs'})
+_ZH.update({
+ 'qt.logs.title':'诊断日志','qt.logs.refresh':'刷新','qt.logs.copy':'复制内容',
+ 'qt.logs.hint':'查看当前运行信息、界面异常和播放错误。仅在本机读取，常见敏感字段会遮盖。',
+ 'qt.logs.loading':'正在读取日志…','qt.logs.failed':'日志无法读取，文件可能已轮转或权限不足。',
+ 'qt.logs.limited':'已显示每个日志文件末尾最多64KB。','qt.logs.ready':'日志已载入，可复制反馈。',
+ 'qt.logs.empty':'暂无日志文件；已显示运行环境。','qt.logs.copied':'已复制到剪贴板。',
+ 'qt.history.readonly':'只读查看事务记录，不会重试、恢复或更改设备文件。',
+ 'qt.history.search':'搜索歌曲文件夹、状态或事务编号','qt.history.all':'全部状态',
+ 'qt.history.summary':'记录详情','qt.history.raw':'原始记录','qt.history.close':'关闭',
+ 'qt.history.total':'全部 {count}','qt.history.done':'已完成 {count}','qt.history.attention':'需关注 {count}',
+ 'qt.history.empty':'选择左侧记录查看详情。','qt.history.visible':'显示 {count} / {total} 条',
+ 'qt.history.device':'目标设备','qt.history.target':'目标位置','qt.history.transaction':'事务编号','qt.history.stage':'事务阶段',
+})
+_EN.update({
+ 'qt.logs.title':'Diagnostic logs','qt.logs.refresh':'Refresh','qt.logs.copy':'Copy content',
+ 'qt.logs.hint':'View runtime information, UI exceptions and playback errors. Local reading only; common sensitive fields are masked.',
+ 'qt.logs.loading':'Reading logs…','qt.logs.failed':'Logs could not be read; they may have rotated or access was denied.',
+ 'qt.logs.limited':'Showing at most the last 64 KB of each log.','qt.logs.ready':'Logs loaded. Copy them for troubleshooting.',
+ 'qt.logs.empty':'No log files yet. Runtime information is shown.','qt.logs.copied':'Copied to clipboard.',
+ 'qt.history.readonly':'Read-only transactions. No retries, recovery or device changes are performed here.',
+ 'qt.history.search':'Search song folder, status or transaction ID','qt.history.all':'All states',
+ 'qt.history.summary':'Record details','qt.history.raw':'Raw record','qt.history.close':'Close',
+ 'qt.history.total':'All {count}','qt.history.done':'Completed {count}','qt.history.attention':'Needs attention {count}',
+ 'qt.history.empty':'Select a record on the left.','qt.history.visible':'Showing {count} / {total}',
+ 'qt.history.device':'Device','qt.history.target':'Destination','qt.history.transaction':'Transaction ID','qt.history.stage':'Transaction stage',
+})
+_EN.update({
+    'ui.library.inline_count':'{visible} / {count} · {selected} selected',
+    'ui.window.minimize':'Minimize', 'ui.window.maximize':'Maximize',
+    'ui.window.restore':'Restore', 'ui.window.close':'Close',
+})
+_EN.update({
+    'qt.wireless.recent':'Recent Quest', 'qt.wireless.manual':'Enter a new address',
+    'qt.wireless.forget':'Forget', 'qt.wireless.reconnect':'Reconnect',
+    'qt.wireless.recent_hint':'Saved addresses are not online status. Reconnect verifies the headset identity. Pairing codes are never saved.',
+    'qt.wireless.history_error':'Recent connections could not be read or saved. The original file is preserved; manual connection is available.',
+    'qt.wireless.reload_hint':'Reload the old library after reconnecting. Songs are never sent automatically.',
+    'qt.wireless.recovery.offline':'Wireless device offline. Wake the headset and check its network',
+    'qt.wireless.recovery.disconnected':'Wireless connection lost',
+    'qt.wireless.recovery.unauthorized':'Wireless device not authorized. Allow debugging in the headset',
+    'qt.wireless.recovery.rejected':'Headset identity mismatch. Check the address and device',
+})
+
+_ZH.update({"ui.library.drag_hint":"拖动歌曲到另一侧曲库，确认后传输。"})
+_EN.update({"ui.library.drag_hint":"Drag songs to the opposite library to review and confirm a transfer."})
+
+_ZH.update({
+    'playlists.status.local':'本地曲库', 'playlists.status.quest':'Quest 曲库',
+    'playlists.resolving_quest':'正在匹配 Quest 歌曲 · 封面与名称优先加载可见区域…',
+    'qt.playlists.state':'曲库状态', 'qt.playlists.key':'编号',
+    'qt.playlists.detail':'查看歌曲详情', 'qt.playlists.play':'播放歌曲',
+    'qt.playlists.summary':'共 {count} 首 · 当前显示 {visible} 首 · 曲库已匹配 {matched} 首',
+    'qt.playlists.ready':'曲库匹配完成；选择已安装歌曲即可播放。',
+    'qt.playlists.hint':'按歌曲哈希匹配本地与当前 Quest 曲库。未匹配不等于未安装。封面和名称按需读取；Quest 歌曲首次播放会缓存单首音频到电脑，后续拖动进度复用缓存。歌单原文件不变。未安装歌曲可准备下载，最多200个编号。',
+})
+_EN.update({
+    'playlists.status.local':'Local library', 'playlists.status.quest':'Quest library',
+    'playlists.resolving_quest':'Matching Quest songs · loading visible titles and artwork…',
+    'qt.playlists.state':'Library', 'qt.playlists.key':'ID',
+    'qt.playlists.detail':'Song details', 'qt.playlists.play':'Play song',
+    'qt.playlists.summary':'{count} songs · {visible} shown · {matched} matched in libraries',
+    'qt.playlists.ready':'Library matching finished. Select an installed song to play.',
+    'qt.playlists.hint':'Exact song hashes match the local and selected Quest libraries. Unmatched does not mean absent. Visible artwork and titles load on demand. Playing a Quest song caches one audio file on the PC; seeking reuses it. The original playlist is unchanged. Up to 200 missing song IDs can be prepared for download.',
+})
+
+_ZH.update({'qt.local_audio.play':'播放歌曲','qt.local_audio.choose':'请选择歌曲播放','qt.local_audio.seek':'播放进度',
+            'qt.quest_audio.unavailable':'歌曲音频信息不完整或当前通道不支持播放，请重新读取 Quest 曲库。'})
+_EN.update({'qt.local_audio.play':'Play song','qt.local_audio.choose':'Select a song to play','qt.local_audio.seek':'Playback position',
+            'qt.quest_audio.unavailable':'Audio metadata is missing or this connection cannot play audio. Reload the Quest library.'})
+
+_ZH.update({"playlists.metadata_unavailable":"部分歌曲资料暂时无法获取，原歌单条目已保留。点击重新匹配可重试。"})
+_EN.update({"playlists.metadata_unavailable":"Some song details are unavailable. Original entries are preserved; use Match again to retry."})
+
+_ZH.update({"playlists.quest_match_unavailable":"部分 Quest 歌曲尚未完成匹配，已读歌单条目保留。点击重新匹配可重试。"})
+_EN.update({"playlists.quest_match_unavailable":"Some Quest songs could not be matched. Playlist entries are preserved; use Match again to retry."})

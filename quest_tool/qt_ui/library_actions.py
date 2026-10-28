@@ -1,4 +1,4 @@
-"""Focus-scoped, non-destructive library commands; no device operations."""
+"""Focus-scoped library commands; mutations use a separate confirmed worker."""
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QEvent, QModelIndex, Qt, QUrl
@@ -21,9 +21,7 @@ class LibraryActions(QObject):
         for view, key in self.views:
             view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
             view.customContextMenuRequested.connect(lambda point, v=view, k=key: self.show_menu(v, k, point))
-        for sequence, callback in (('Ctrl+D', self.toggle_details),
-                                   ('Ctrl+1', lambda: self.direction('quest')),
-                                   ('Ctrl+2', lambda: self.direction('local'))):
+        for sequence, callback in (('Ctrl+D', self.toggle_details),):
             shortcut = QShortcut(QKeySequence(sequence), window)
             shortcut.activated.connect(callback);window.shortcuts.append(shortcut)
         QApplication.instance().installEventFilter(self)
@@ -53,11 +51,13 @@ class LibraryActions(QObject):
             elif modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier) and key == Qt.Key.Key_A:
                 command = 'all'
             elif modifiers == Qt.KeyboardModifier.NoModifier and key == Qt.Key.Key_Escape:command = 'clear'
+            elif modifiers == Qt.KeyboardModifier.NoModifier and key == Qt.Key.Key_Delete:command = 'delete'
         elif QApplication.focusWidget() is self.window.search and modifiers == Qt.KeyboardModifier.NoModifier and key == Qt.Key.Key_Escape:
             command = 'search'
         if command is None:return False
         event.accept()
         if event.type() == QEvent.Type.ShortcutOverride:return True
+        if event.isAutoRepeat():return True
         if command == 'search':self.window.search.clear()
         elif command == 'menu':
             view, key = pair
@@ -66,6 +66,7 @@ class LibraryActions(QObject):
                 view.scrollTo(index)
                 self.show_menu(view,key,view.visualRect(index).center())
         elif command == 'copy':self.copy_selection(*pair)
+        elif command == 'delete':self.window.deletion.remove(*pair)
         else:self.checks(pair[0], command)
         return True
 
@@ -161,6 +162,12 @@ class LibraryActions(QObject):
         menu.addAction(tr('songlist.ctx.copy_title'),lambda:self.copy_token(token,'title'))
         action = menu.addAction(tr('songlist.ctx.open_explorer'),lambda:self.open_token(token))
         action.setEnabled(self.local_path(token) is not None)
+        menu.addSeparator()
+        action = menu.addAction(tr('songs.delete.action'),lambda:self.window.deletion.remove(view,key,token))
+        action.setShortcut(QKeySequence('Del'))
+        action.setEnabled(self.window.deletion.available() and (token[1] == 'local' or bool(
+            self.window.device_browser.selected and self.window.deletion.session.client.provider is not None
+            and self.window.device_browser.selected['identity'] == token[2] and self.resolve(token).get('info_hash'))))
         menu.addSeparator()
         for mode in ('visible','all','clear'):
             menu.addAction(tr('qt.actions.'+mode),lambda m=mode:self.menu_checks(token,view,m))

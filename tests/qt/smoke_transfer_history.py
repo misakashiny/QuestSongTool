@@ -74,6 +74,22 @@ def child():
             view.listing.setCurrentItem(valid_item);app.processEvents()
             assert '中文歌曲' in view.details.toPlainText() and view.details.isReadOnly()
             assert valid_item.text(0)==tr('qt.transfer.history_committed')
+            assert '中文歌曲' in view.summary.toPlainText() and view.summary.isReadOnly()
+            def visible_count():return sum(not view.listing.topLevelItem(i).isHidden() for i in range(11))
+            view.search.setText('中文歌曲');assert visible_count()==1 and view.listing.currentItem()==valid_item
+            view.search.setText('missing-search');assert visible_count()==0 and not view.copy.isEnabled()
+            view.search.clear();view.filter.setCurrentIndex(view.filter.findData('committed'))
+            assert visible_count()==1 and view.listing.currentItem()==valid_item
+            view.filter.setCurrentIndex(view.filter.findData('invalid'));assert visible_count()==10
+            assert view.listing.currentItem().data(0,Qt.ItemDataRole.UserRole) is None
+            view.filter.setCurrentIndex(view.filter.findData('all'));view.listing.setCurrentItem(valid_item)
+            class Clipboard:
+                text=''
+                def setText(self,text):self.text=text
+            clipboard=Clipboard()
+            with patch.object(QApplication,'clipboard',return_value=clipboard):
+                view.copy.click();assert clipboard.text==view.summary.toPlainText()
+                view.tabs.setCurrentIndex(1);view.copy.click();assert clipboard.text==view.details.toPlainText()
             view.reload();view.close();view.wait_closed();app.processEvents()
         assert snapshot=={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in journals.iterdir()}
         # Bounded directory view; no misleading promise that UUID ordering is date ordering.

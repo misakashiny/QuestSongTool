@@ -88,10 +88,12 @@ def child():
             window.show()
             window.resize(1000, 760)
             QTest.qWait(50)
-            assert tools.clear.geometry().right() < tools.presets.geometry().left()
-            assert tools.summary.height() == tools.clear.height() == tools.presets.height()
-            assert tools.description.width() > 0 and tools.row.height() < window.height()/6
-            QTest.mouseClick(tools.presets, Qt.MouseButton.LeftButton)
+            assert tools.summary.geometry().right() < tools.clear.geometry().left()
+            assert tools.summary.height() == tools.clear.height()
+            assert tools.row.height() < window.height()/6 and tools.preset_action.isEnabled()
+            menu=window.options.menu();menu.popup(window.options.mapToGlobal(window.options.rect().bottomLeft()))
+            QTest.qWait(30)
+            QTest.mouseClick(menu,Qt.MouseButton.LeftButton,pos=menu.actionGeometry(tools.preset_action).center())
             dialog = tools.dialog
             dialog.name.setText('daily')
             QTest.mouseClick(dialog.save, Qt.MouseButton.LeftButton)

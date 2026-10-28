@@ -55,7 +55,8 @@ def child():
                         wait(lambda:window.help.dialog is not None and QApplication.activeModalWidget() is window.help.dialog)
                         dialog=window.help.dialog;assert dialog.windowTitle()==tr('qt.help.title')
                         assert dialog.parentWidget() is window and dialog.windowModality()==Qt.WindowModality.WindowModal
-                        assert len(dialog.rows)==12
+                        assert len(dialog.rows)==10
+                        assert not {'Ctrl+1','Ctrl+2'} & {row[0] for row in dialog.rows}
                         for _sequence,key,shortcut,description in dialog.rows:
                             assert description.text()==tr(key) and description.textFormat()==Qt.TextFormat.PlainText
                             assert shortcut.textFormat()==Qt.TextFormat.PlainText

@@ -7,7 +7,7 @@ from PIL import Image, ImageOps
 
 from PySide6.QtCore import QEvent, QObject, QRect, QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QIcon, QPen
-from PySide6.QtWidgets import QListView, QStyle, QStyledItemDelegate, QStyleOptionViewItem, QTableView
+from PySide6.QtWidgets import QHeaderView, QListView, QStyle, QStyledItemDelegate, QStyleOptionViewItem, QTableView
 
 from ..downloads import check_cancel
 from ..fsapi import LocalFS, Location
@@ -142,13 +142,41 @@ class LibraryTable(QTableView):
     def __init__(self):
         super().__init__()
         self.artist_width = DESKTOP.LIBRARY_COLUMNS[1]
+        self.normal_columns={};self.fitting=False;self.compact=False
+        super().horizontalHeader().sectionResized.connect(self.remember_column)
+
+    def remember_column(self, column, _old, width):
+        if not self.fitting and column in (0,2,3) and super().horizontalHeader().sectionResizeMode(column)==QHeaderView.ResizeMode.Interactive:
+            self.normal_columns[column]=width
 
     def setColumnWidth(self, column, width):
         if column == 1:self.artist_width = width
+        if column in (0,2,3) and not self.fitting:self.normal_columns[column]=width
         super().setColumnWidth(column, width)
 
     def saved_widths(self):
-        return [super().columnWidth(0), self.artist_width, super().columnWidth(2)]
+        return [self.normal_columns.get(0,super().columnWidth(0)),self.artist_width,self.normal_columns.get(2,super().columnWidth(2))]
+
+    def saved_rating_width(self):
+        return self.normal_columns.get(3,super().columnWidth(3))
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.fitting or super().model() is None or super().model().columnCount()<4:return
+        width=super().viewport().width()
+        if width<100:return
+        self.compact=sum(self.normal_columns.get(key,0) for key in (0,2,3))>width
+        values=dict(self.normal_columns)
+        if self.compact:
+            values[2]=min(values.get(2,60),46);values[3]=min(values.get(3,72),60)
+        # Let the song column consume the spare width without overwriting the
+        # user's preferred widths with temporary window-dependent dimensions.
+        values[0]=max(36,width-values.get(2,60)-values.get(3,72))
+        self.fitting=True
+        try:
+            super().horizontalHeader().setMinimumSectionSize(36)
+            for key in (2,3,0):super().setColumnWidth(key,values.get(key,60))
+        finally:self.fitting=False
 
 
 class LibraryRowDelegate(QStyledItemDelegate):
@@ -232,7 +260,7 @@ class LibraryDelegate(QStyledItemDelegate):
         painter.save();painter.setClipRect(option.rect)
         painter.setBrush(QColor(p.BG_SELECTED if option.state & QStyle.StateFlag.State_Selected else p.BG_CARD))
         painter.setPen(QPen(QColor(p.ACCENT if option.state & QStyle.StateFlag.State_MouseOver else p.BORDER)))
-        painter.drawRoundedRect(rect, RADIUS.CONTROL, RADIUS.CONTROL)
+        painter.drawRoundedRect(rect, RADIUS.CARD, RADIUS.CARD)
         art,title,author,rating,duration = self.content_rects(rect)
         cache = self.view.window.covers.cache
         image = cache.image(item['folder'], art.size(), self.view.devicePixelRatioF())

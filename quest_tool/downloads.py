@@ -84,6 +84,20 @@ class SafeRedirect(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
+def published_version(data):
+    """Search and download must choose the same usable published version."""
+    versions = data.get('versions') if isinstance(data, dict) else None
+    if not isinstance(versions,list):raise DownloadError('metadata')
+    candidates = [v for v in versions if isinstance(v,dict) and v.get('state') == 'Published']
+    for version in sorted(candidates,key=lambda v:str(v.get('createdAt','')),reverse=True):
+        digest = version.get('hash')
+        if not isinstance(digest,str) or not re.fullmatch('[0-9a-f]{40}',digest.lower()):continue
+        try:safe_web_url(str(version.get('downloadURL','')))
+        except (DownloadError,ValueError):continue
+        return version
+    raise DownloadError('metadata')
+
+
 class BeatSaverClient:
     def __init__(self):
         self.opener = urllib.request.build_opener(SafeRedirect())
@@ -148,12 +162,12 @@ class BeatSaverClient:
                    lambda _done, _total: None, limit=2 * 1024 * 1024)
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-            versions = [v for v in data["versions"] if v.get("state") == "Published"]
-            version = max(versions, key=lambda v: v.get("createdAt", ""))
+            version = published_version(data)
             digest = version["hash"].lower()
             if not re.fullmatch(r"[0-9a-f]{40}", digest):
                 raise ValueError("invalid map hash")
-            meta = data.get("metadata", {})
+            meta = data.get("metadata") or {}
+            if not isinstance(meta,dict):raise ValueError('invalid map metadata')
             return {"map_id": map_id, "hash": digest, "url": safe_web_url(version["downloadURL"]),
                     "title": str(meta.get("songName") or data.get("name") or map_id)[:200],
                     "mapper": str(meta.get("levelAuthorName") or "")[:160]}

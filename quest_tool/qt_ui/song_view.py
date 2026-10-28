@@ -6,7 +6,7 @@ from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QListView, QStyle, QStyledItemDelegate
 
 from ..messages import tr
-from ..theme import DOWNLOAD, RADIUS, SPACE, get_palette
+from ..theme import DOWNLOAD, DOWNLOAD_UI, RADIUS, SPACE, get_palette
 from .icons import line_icon
 
 
@@ -34,7 +34,7 @@ class SongDelegate(QStyledItemDelegate):
     def controls(self, rect):
         size = DOWNLOAD.CONTROL
         right = rect.right()-SPACE.M-size+1
-        bottom = rect.top()+(DOWNLOAD.ART_HEIGHT if self.view.covers else DOWNLOAD.CONTROL*2+SPACE.M*3)-SPACE.M
+        bottom = rect.top()+(DOWNLOAD_UI.ART_HEIGHT if self.view.covers else DOWNLOAD.CONTROL*2+SPACE.M*3)-SPACE.M
         play = QRect(right, bottom-size, size, size)
         check = play.translated(0, -size-SPACE.M)
         return check, play
@@ -50,10 +50,10 @@ class SongDelegate(QStyledItemDelegate):
         hover = bool(option.state & QStyle.StateFlag.State_MouseOver)
         painter.setBrush(QColor(p.BG_HOVER if hover and not current else p.BG_CARD))
         painter.setPen(QPen(QColor(p.ACCENT if current else p.BORDER), 2 if current else 1))
-        painter.drawRoundedRect(rect, RADIUS.CONTROL, RADIUS.CONTROL)
+        painter.drawRoundedRect(rect, RADIUS.CARD, RADIUS.CARD)
         if self.view.covers:
-            art = QRect(rect.left()+1, rect.top()+1, rect.width()-2, DOWNLOAD.ART_HEIGHT-SPACE.XS)
-            text = QRect(rect.left()+SPACE.M, rect.top()+DOWNLOAD.ART_HEIGHT+SPACE.XS,
+            art = QRect(rect.left()+1, rect.top()+1, rect.width()-2, DOWNLOAD_UI.ART_HEIGHT-SPACE.XS)
+            text = QRect(rect.left()+SPACE.M, rect.top()+DOWNLOAD_UI.ART_HEIGHT+SPACE.XS,
                          rect.width()-2*SPACE.M, 24)
         else:
             art = QRect(rect.left()+SPACE.XS, rect.top()+SPACE.XS, 56, 56)
@@ -85,51 +85,61 @@ class SongDelegate(QStyledItemDelegate):
                           max(1, min(art.width()-SPACE.M*2, painter.fontMetrics().horizontalAdvance(status)+SPACE.L*2)),
                           painter.fontMetrics().height()+SPACE.S*2)
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor(p.BG_CARD))
+            painter.setBrush(QColor(p.SUCCESS_SOFT if status==tr('qt.verify.same') else p.BG_CARD))
             painter.drawRoundedRect(badge, RADIUS.CHIP, RADIUS.CHIP)
             painter.setPen(QColor(p.TEXT_PRIMARY))
             painter.drawText(badge.adjusted(SPACE.S, 0, -SPACE.S, 0), Qt.AlignmentFlag.AlignVCenter,
                              painter.fontMetrics().elidedText(status, Qt.TextElideMode.ElideRight, badge.width()-SPACE.S*2))
             painter.restore()
         font = QFont(option.font)
+        font.setPixelSize(DOWNLOAD_UI.CARD_TITLE if self.view.covers else DOWNLOAD_UI.CARD_TEXT)
         font.setBold(True)
         painter.setFont(font)
         painter.setPen(QColor(p.TEXT_PRIMARY))
         painter.drawText(text, Qt.AlignmentFlag.AlignVCenter,
                          painter.fontMetrics().elidedText(song.title, Qt.TextElideMode.ElideRight, text.width()))
         font.setBold(False)
+        font.setPixelSize(DOWNLOAD_UI.CARD_TEXT)
         painter.setFont(font)
         painter.setPen(QColor(p.TEXT_SECONDARY))
         lines = (song.artist, tr("qt.songs.mapper", name=song.mapper)) if self.view.covers else (
                      f"{song.artist} · {song.duration} · {song.rating_text}"+(' · '+status if status else ''),)
-        for line in lines:
+        for number,line in enumerate(lines):
             text.translate(0, 22)
-            painter.drawText(text, Qt.AlignmentFlag.AlignVCenter,
-                             painter.fontMetrics().elidedText(line, Qt.TextElideMode.ElideRight, text.width()))
+            line_rect=text.adjusted(0,0,-min(105,text.width()//2) if self.view.covers and number==1 and song.diffs else 0,0)
+            painter.drawText(line_rect, Qt.AlignmentFlag.AlignVCenter,
+                             painter.fontMetrics().elidedText(line, Qt.TextElideMode.ElideRight, line_rect.width()))
         if self.view.covers:
             text.translate(0,22)
-            duration_width = painter.fontMetrics().horizontalAdvance(song.duration)+SPACE.M
-            rating_rect = text.adjusted(0,0,-duration_width,0)
-            painter.drawText(rating_rect,Qt.AlignmentFlag.AlignVCenter,painter.fontMetrics().elidedText(
-                song.rating_text,Qt.TextElideMode.ElideRight,rating_rect.width()))
-            painter.drawText(text,Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignVCenter,song.duration)
+            metrics = f'{song.rating_text} · {song.bpm_text} BPM · {song.duration}'
+            painter.drawText(text,Qt.AlignmentFlag.AlignVCenter,painter.fontMetrics().elidedText(metrics,Qt.TextElideMode.ElideRight,text.width()))
+            if song.diffs:
+                difficulty = song.diffs[0].split(' · ')
+                difficulty = difficulty[1] if len(difficulty)>1 else difficulty[0]
+                width = min(rect.width()//2,painter.fontMetrics().horizontalAdvance(difficulty)+SPACE.L)
+                badge = QRect(rect.right()-width-SPACE.M,text.top()-27,width,24)
+                bg,fg=(DOWNLOAD_UI.EXPERT_PLUS_BG,DOWNLOAD_UI.EXPERT_PLUS_TEXT) if "Plus" in difficulty or "+" in difficulty else (DOWNLOAD_UI.EXPERT_BG,DOWNLOAD_UI.EXPERT_TEXT)
+                if self.view.mode=="dark":bg,fg=p.ACCENT_SOFT,p.TEXT_PRIMARY
+                painter.setPen(Qt.PenStyle.NoPen);painter.setBrush(QColor(bg))
+                painter.drawRoundedRect(badge,RADIUS.CHIP,RADIUS.CHIP);painter.setPen(QColor(fg))
+                painter.drawText(badge,Qt.AlignmentFlag.AlignCenter,painter.fontMetrics().elidedText(difficulty,Qt.TextElideMode.ElideRight,width-SPACE.S))
         check, play = self.controls(rect)
         checked = index.data(Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Checked
-        check_background = QColor(p.BG_CARD)
-        check_background.setAlpha(220)
+        check_background = QColor(DOWNLOAD_UI.OVERLAY)
+        check_background.setAlpha(160)
         over_cover = self.view.covers
         painter.setBrush(QColor(p.ACCENT) if checked else check_background if over_cover else Qt.BrushStyle.NoBrush)
-        painter.setPen(QPen(QColor(p.ACCENT if checked else p.BORDER_STRONG), 2))
+        painter.setPen(QPen(QColor(p.ACCENT if checked else DOWNLOAD_UI.OVERLAY_TEXT if over_cover else p.BORDER_STRONG), 2))
         painter.drawRoundedRect(check.adjusted(2, 2, -2, -2), RADIUS.CHIP, RADIUS.CHIP)
         if checked:
             painter.setPen(QPen(QColor(p.ACCENT_TEXT), 2))
             painter.drawLine(check.left()+8, check.center().y(), check.left()+14, check.bottom()-8)
             painter.drawLine(check.left()+14, check.bottom()-8, check.right()-7, check.top()+8)
-        painter.setBrush(QColor(p.BG_CARD))
-        painter.setPen(QPen(QColor(p.BORDER_STRONG), 1))
+        painter.setBrush(check_background if over_cover else QColor(p.BG_CARD))
+        painter.setPen(QPen(QColor(DOWNLOAD_UI.OVERLAY_TEXT if over_cover else p.BORDER_STRONG), 1))
         painter.drawEllipse(play.adjusted(1, 1, -1, -1))
         active = self.view.preview_key == song.key
-        line_icon("stop" if active else "play", p.ACCENT if active else p.TEXT_MUTED).paint(
+        line_icon("stop" if active else "play", DOWNLOAD_UI.OVERLAY_TEXT if over_cover else p.ACCENT if active else p.TEXT_MUTED).paint(
             painter, play.adjusted(6, 6, -6, -6))
         if option.state & QStyle.StateFlag.State_HasFocus:
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -185,7 +195,7 @@ class SongView(QListView):
         width = max(1, super().viewport().width())
         # IconMode wraps the last cell when its right edge equals the viewport.
         return QSize(max(1, (width-1)//self.columns) if self.covers else width,
-                     DOWNLOAD.CARD_HEIGHT+SPACE.M if self.covers else DOWNLOAD.CONTROL*2+SPACE.M*4)
+                     DOWNLOAD_UI.CARD_HEIGHT+SPACE.M if self.covers else DOWNLOAD.CONTROL*2+SPACE.M*4)
 
     def configure_view(self, covers, columns):
         self.covers, self.columns = covers, columns

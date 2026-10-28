@@ -65,6 +65,7 @@ def child():
             elif command==['shell','ip -4 addr show wlan0']:
                 output = 'inet 192.168.1.42/24 brd 192.168.1.255' if state['ip'] else ''
             elif command==['shell','getprop dhcp.wlan0.ipaddress']:output = ''
+            elif command==['shell','ip -4 route get 1.1.1.1']:output = ''
             elif command==['tcpip','5555']:
                 assert serial=='USB_A'
                 output = 'failed' if state['fail_tcp'] else 'restarting in TCP mode port: 5555'
@@ -117,9 +118,23 @@ def child():
                 def factory():
                     factories.append(True);return AdbPullBackend(provider),AdbPushBackend(provider,base/'journals')
                 window=LibraryWindow(base/language,language,device_provider=provider,wireless_client=client,transfer_factory=factory)
-                count=len(calls);window.show();assert QTest.qWaitForWindowExposed(window,5000)
+                count=len(calls);window.show()
+                assert QTest.qWaitForWindowExposed(window,5000),(language,window.frameGeometry(),[(s.name(),s.availableGeometry()) for s in app.screens()],window.isVisible(),window.windowState())
                 controller=window.wireless;browser=window.device_browser;transfers=window.transfers
-                assert len(calls)==count and not factories and not transfers.page.isVisible()
+                assert len(calls)==count and factories==[True] and transfers.page.isVisible()
+                assert not hasattr(controller,'transfer_entry') and not hasattr(controller,'transfer_enable')
+                assert not transfers.pull.isVisible() and transfers.push.isVisible()
+                window.resize(1000,640);QTest.qWait(50)
+                assert transfers.push.width()>=transfers.push.minimumSizeHint().width()
+                assert window.rect().contains(transfers.push.mapTo(window,transfers.push.rect().center()))
+                if os.environ.get('QUEST_QT_SHOTS'):
+                    folder=Path(os.environ['QUEST_QT_SHOTS']);folder.mkdir(parents=True,exist_ok=True)
+                    window.grab().save(str(folder/f'transfer-entry-{language}-{os.environ.get("QT_SCALE_FACTOR")}.png'))
+                assert factories==[True] and len(calls)==count and transfers.page.isVisible()
+                assert not transfers.pull.isVisible() and transfers.push.isVisible()
+                assert controller.button.isVisible() and controller.button.isEnabled()
+                assert not transfers.pull.isEnabled() and not transfers.push.isEnabled()
+                assert not (base/'journals').exists() and not transfers.jobs
                 controller.button.click();form=controller.dialog;assert form is not None and len(calls)==count
                 assert browser.connection_open and not browser.read.isEnabled()
                 requests=[];form.requestReady.connect(requests.append)
@@ -142,9 +157,9 @@ def child():
                             assert label.isVisible() and label.width()>=label.sizeHint().width()
                 form.mode.setCurrentIndex(0);form.fields['host'].clear()
                 count=len(calls);form.run_button.click();wait(lambda:not controller.busy)
+                assert controller.result is not None,(language,form.status.text(),form.devices.currentData(),requests[-1:] if requests else [])
                 assert controller.result['endpoint']==endpoint and all(t!=main for t,_,_ in calls[count:])
-                form.transfer.click();assert factories==[True] and transfers.page.isVisible() and not transfers.pull.isEnabled()
-                assert not (base/'journals').exists() and not transfers.jobs
+                assert factories==[True] and not transfers.pull.isEnabled()
                 shots=os.environ.get('QUEST_QT_SHOTS')
                 if shots and language=='zh':
                     path=Path(shots);path.mkdir(parents=True,exist_ok=True)
@@ -153,10 +168,18 @@ def child():
                 form.close_button.click();wait(lambda:not browser.busy)
                 assert browser.selected['device_id']==json.dumps([endpoint,'HW_A'],separators=(',',':'))
                 assert browser.selected['root']==root and not window.quest_ready and browser.read.isEnabled()
+                # Explicit next-step action reads the successfully connected
+                # device once; merely closing above did not read anything.
+                controller.button.click();form=controller.dialog;form.mode.setCurrentIndex(1)
+                form.fields['host'].setText('192.168.1.42');form.run_button.click();wait(lambda:not controller.busy)
+                assert form.read_button.isEnabled()
+                with patch.object(provider,'read_metadata',return_value=dict(device=browser.selected,connected=True,rows=[])) as reader:
+                    form.read_button.click();wait(lambda:window.quest_ready and not browser.busy and not browser.connection_open)
+                    assert reader.call_count==1 and not browser.read_after_connect
                 local=base/(language+'-library');local.mkdir();window.target=local;window.local_ready=True
                 window.set_quest_snapshot([dict(folder='sample',title='Song',author='Artist',duration=120,error='')],browser.selected['identity'])
                 window.quest_model.checked={'sample'};transfers.render();assert transfers.pull.isEnabled()
-                window.quest_incomplete=True;transfers.render();assert not transfers.pull.isEnabled()
+                window.quest_incomplete=True;transfers.render();assert transfers.pull.isEnabled() and not transfers.push.isEnabled() and not transfers.missing.isEnabled()
                 window.quest_incomplete=False;transfers.render();count=len(calls)
                 transfers.pull.click();assert transfers.dialog is not None and transfers.dialog.plan.folders==('sample',)
                 assert len(calls)==count;transfers.dialog.close();QTest.qWait(30)
@@ -176,7 +199,7 @@ def child():
             def entry_exec(_app):
                 entry=next(w for w in app.topLevelWidgets() if isinstance(w,LibraryWindow) and not w.closed)
                 assert entry.wireless.button.isVisible() and entry.wireless.session is not None
-                assert not entry.transfers.page.isVisible() and len(calls)==count
+                assert entry.transfers.page.isVisible() and entry.transfers.push.isVisible() and len(calls)==count
                 entry.close();return 0
             with patch.object(bootstrap,'QApplication',lambda *_args:app),patch.object(QApplication,'exec',entry_exec):
                 assert bootstrap.run(['--library','--quest-adb','--adb-path',str(exe),'--data-dir',str(base/'entry')])==0
